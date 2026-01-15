@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>侧边栏测试</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <style>
+    /* 侧边栏样式 */
+    #sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 250px;
+      height: 100vh;
+      background-color: white;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 100;
+    }
+    
+    /* 遮罩层样式 */
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 50;
+    }
+    
+    /* 切换按钮样式 */
+    #toggleSidebar {
+      margin: 20px;
+      padding: 10px 20px;
+      background-color: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    /* 关闭按钮样式 */
+    #closeSidebar {
+      margin: 20px;
+      padding: 5px 10px;
+      background-color: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- 侧边栏 -->
+  <div id="sidebar">
+    <h2>侧边栏</h2>
+    <button id="closeSidebar">关闭侧边栏</button>
+    <ul>
+      <li>菜单项1</li>
+      <li>菜单项2</li>
+      <li>菜单项3</li>
+    </ul>
+  </div>
+  
+  <!-- 遮罩层 -->
+  <div id="overlay"></div>
+  
+  <!-- 主内容 -->
+  <div class="container">
+    <button id="toggleSidebar">打开侧边栏</button>
+    <h1>测试页面</h1>
+    <p>这是一个测试侧边栏功能的页面。</p>
+  </div>
+  
+  <!-- JavaScript -->
+  <script>
+    // 获取DOM元素
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const toggleSidebarBtn = document.getElementById('toggleSidebar');
+    const closeSidebarBtn = document.getElementById('closeSidebar');
+    
+    // 打开侧边栏
+    function openSidebar() {
+      sidebar.style.transform = 'translateX(0)';
+      overlay.style.display = 'block';
+      document.body.style.overflow = 'hidden';
+    }
+    
+    // 关闭侧边栏
+    function closeSidebar() {
+      sidebar.style.transform = 'translateX(-100%)';
+      overlay.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+    
+    // 绑定事件
+    toggleSidebarBtn.addEventListener('click', openSidebar);
+    closeSidebarBtn.addEventListener('click', closeSidebar);
+    overlay.addEventListener('click', closeSidebar);
+  </script>
+</body>
+</html>

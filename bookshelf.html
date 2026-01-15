@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的书架 - 欣欣小说</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 自定义Tailwind配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#6366f1', // 主色调：靛蓝色
+            secondary: '#ec4899', // 辅助色：粉红色
+            accent: '#8b5cf6', // 强调色：紫色
+            dark: {
+              bg: '#121212',
+              card: '#1e1e1e',
+              text: '#e0e0e0',
+              border: '#333333'
+            },
+            sidebar: {
+              bg: "#FFFFFF",
+              text: "#333333",
+              hover: "#F5F5F5",
+              border: "#EAEAEA"
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            serif: ['Georgia', 'Cambria', 'serif']
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .scrollbar-hide {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+      .transition-all-300 {
+        transition: all 300ms ease-in-out;
+      }
+      .card-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+      .gradient-bg {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+    }
+  </style>
+  
+  <style>
+    /* 全局样式 */
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    /* 动画效果 */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-fade-in {
+      animation: fadeIn 0.5s ease forwards;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800 transition-all duration-300">
+  <!-- 侧边栏 -->
+  <div id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-sidebar-bg border-r border-sidebar-border transform -translate-x-full transition-transform duration-300 ease-in-out z-40 overflow-y-auto">
+    <!-- 侧边栏头部 -->
+    <div class="p-4 border-b border-sidebar-border flex justify-between items-center">
+      <div class="flex items-center">
+        <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+          <i class="fa fa-book text-primary text-xl"></i>
+        </div>
+        <div class="ml-3">
+          <h3 class="font-medium text-sidebar-text">游客用户</h3>
+          <p class="text-xs text-gray-500">登录后享受更多功能</p>
+        </div>
+      </div>
+      <button id="closeSidebar" class="text-gray-500 hover:text-gray-700 transition-colors">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    
+    <!-- 侧边栏菜单 -->
+    <ul class="py-2">
+      <li>
+        <a href="index.html" class="nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-sidebar-hover transition-colors" data-page="home">
+          <i class="fa fa-home w-5 text-center mr-3"></i>
+          <span>首页</span>
+        </a>
+      </li>
+      <li>
+        <a href="bookshelf.html" class="nav-link flex items-center px-4 py-3 text-primary bg-primary/10 hover:bg-primary/20 transition-colors" data-page="bookshelf">
+          <i class="fa fa-bookmark w-5 text-center mr-3 text-primary"></i>
+          <span>我的书架</span>
+        </a>
+      </li>
+      <li>
+        <a href="category.html" class="nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-sidebar-hover transition-colors" data-page="category">
+          <i class="fa fa-th-large w-5 text-center mr-3"></i>
+          <span>小说分类</span>
+        </a>
+      </li>
+      <li>
+        <a href="ranking.html" class="nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-sidebar-hover transition-colors" data-page="ranking">
+          <i class="fa fa-star w-5 text-center mr-3 text-gray-500"></i>
+          <span>排行榜</span>
+        </a>
+      </li>
+      <li>
+        <a href="discover.html" class="nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-sidebar-hover transition-colors" data-page="discover">
+          <i class="fa fa-compass w-5 text-center mr-3 text-gray-500"></i>
+          <span>发现</span>
+        </a>
+      </li>
+      <li class="border-t border-sidebar-border my-2"></li>
+      <li>
+        <a href="#" class="nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-sidebar-hover transition-colors">
+          <i class="fa fa-history w-5 text-center mr-3 text-gray-500"></i>
+          <span>阅读历史</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-sidebar-hover transition-colors">
+          <i class="fa fa-download w-5 text-center mr-3 text-gray-500"></i>
+          <span>下载管理</span>
+        </a>
+      </li>
+      <li class="border-t border-sidebar-border my-2"></li>
+      <li>
+        <a href="settings.html" class="nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-sidebar-hover transition-colors">
+          <i class="fa fa-cog w-5 text-center mr-3 text-gray-500"></i>
+          <span>设置</span>
+        </a>
+      </li>
+      <li>
+        <a href="updates.html" class="nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-sidebar-hover transition-colors" data-page="updates">
+          <i class="fa fa-newspaper-o w-5 text-center mr-3 text-gray-500"></i>
+          <span>更新日志</span>
+        </a>
+      </li>
+      <li>
+        <a href="user.html" class="nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-sidebar-hover transition-colors" data-page="user">
+          <i class="fa fa-user w-5 text-center mr-3 text-gray-500"></i>
+          <span>个人中心</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  
+  <!-- 遮罩层 -->
+  <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 opacity-0 pointer-events-none transition-opacity duration-300 z-30"></div>
+  
+  <!-- 主内容区 -->
+  <div class="min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white border-b border-gray-200 shadow-sm z-30">
+      <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+        <!-- 左侧菜单按钮 -->
+        <button id="openSidebar" class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+          <i class="fa fa-bars text-lg text-gray-600"></i>
+        </button>
+        
+        <!-- 标题 -->
+        <h1 class="text-xl font-bold text-gray-800">我的书架</h1>
+        
+        <!-- 右侧搜索按钮 -->
+        <button id="searchBtn" class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+          <i class="fa fa-search text-lg text-gray-600"></i>
+        </button>
+      </div>
+    </header>
+    
+    <!-- 主要内容 -->
+    <main class="flex-1 overflow-y-auto">
+      <div class="container mx-auto px-4 py-6">
+        <!-- 空书架提示 -->
+        <div class="bg-white rounded-xl shadow-sm p-8 text-center animate-fade-in">
+          <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+            <i class="fa fa-bookmark-o text-gray-400 text-4xl"></i>
+          </div>
+          <h2 class="text-xl font-bold text-gray-800 mb-2">书架还是空的</h2>
+          <p class="text-gray-600 mb-6">快去发现一些好看的小说加入书架吧</p>
+          <a href="discover.html" class="inline-block px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+            <i class="fa fa-compass mr-2"></i> 去发现
+          </a>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- JavaScript -->
+  <script>
+    // 侧边栏控制
+    const openSidebarBtn = document.getElementById('openSidebar');
+    const closeSidebarBtn = document.getElementById('closeSidebar');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    // 打开侧边栏
+    openSidebarBtn.addEventListener('click', () => {
+      sidebar.classList.remove('-translate-x-full');
+      sidebarOverlay.classList.remove('opacity-0', 'pointer-events-none');
+    });
+    
+    // 关闭侧边栏
+    closeSidebarBtn.addEventListener('click', closeSidebar);
+    sidebarOverlay.addEventListener('click', closeSidebar);
+    
+    function closeSidebar() {
+      sidebar.classList.add('-translate-x-full');
+      sidebarOverlay.classList.add('opacity-0', 'pointer-events-none');
+    }
+    
+    // 点击侧边栏菜单项时关闭侧边栏
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        closeSidebar();
+      });
+    });
+    
+    // 搜索按钮
+    const searchBtn = document.getElementById('searchBtn');
+    searchBtn.addEventListener('click', () => {
+      alert('搜索功能暂未实现');
+    });
+  </script>
+</body>
+</html>

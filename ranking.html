@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>排行榜 - 欣欣小说</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 自定义Tailwind配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#6366f1', // 主色调：靛蓝色
+            secondary: '#ec4899', // 辅助色：粉红色
+            accent: '#8b5cf6', // 强调色：紫色
+            dark: {
+              bg: '#121212',
+              card: '#1e1e1e',
+              text: '#e0e0e0',
+              border: '#333333'
+            },
+            sidebar: {
+              bg: "#FFFFFF",
+              text: "#333333",
+              hover: "#F5F5F5",
+              border: "#EAEAEA"
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            serif: ['Georgia', 'Cambria', 'serif']
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .scrollbar-hide {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+      .transition-all-300 {
+        transition: all 300ms ease-in-out;
+      }
+      .card-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+      .gradient-bg {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+    }
+  </style>
+  
+  <style>
+    /* 全局样式 */
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    /* 动画效果 */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-fade-in {
+      animation: fadeIn 0.5s ease forwards;
+    }
+    
+    /* 排行榜标签样式 */
+    .rank-tab {
+      cursor: pointer;
+      padding: 8px 16px;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+    
+    .rank-tab.active {
+      border-bottom-color: #6366f1;
+      color: #6366f1;
+      font-weight: 500;
+    }
+    
+    /* 排行榜数字样式 */
+    .rank-number {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .rank-number.top3 {
+      background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+      color: #744210;
+    }
+    
+    .rank-number.other {
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800 transition-all duration-300">
+  <!-- 侧边栏 -->
+  <div id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-sidebar-bg border-r border-sidebar-border transform -translate-x-full transition-transform duration-300 ease-in-out z-40 overflow-y-auto">
+    <!-- 侧边栏头部 -->
+    <div class="p-4 border-b border-sidebar-border flex justify-between items-center">
+      <div class="flex items-center">
+        <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+          <i class="fa fa-book text-primary text-xl"></i>
+        </div>
+        <div class="ml-3">
+          <h3 class="font-medium text-sidebar-text">游客用户</h3>
+          <p class="text-xs text-gray-500">登录后享受更多功能</p>
+        </div>
+      </div>
+      <button id="closeSidebar" class="text-gray-500 hover:text-gray-700 transition-colors">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    
+    <!-- 侧边栏菜单 -->
+    <ul class="py-2">
+      <li>
+        <a href="index.html" class="nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-sidebar-hover transition-colors" data-page="home">
+          <i class="fa fa-home w-5 text-center mr-3"></i>
+          <span>首页</span>
+        </a>
+      </li>
+      <li>
+        <a href="bookshelf.html" class="nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-sidebar-hover transition-colors" data-page="bookshelf">
+          <i class="fa fa-bookmark w-5 text-center mr-3 text-gray-500"></i>
+          <span>我的书架</span>
+        </a>
+      </li>
+      <li>
+        <a href="category.html" class="nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-sidebar-hover transition-colors" data-page="category">
+          <i class="fa fa-th-large w-5 text-center mr-3"></i>
+          <span>小说分类</span>
+        </a>
+      </li>
+      <li>
+        <a href="ranking.html" class="nav-link flex items-center px-4 py-3 text-primary bg-primary/10 hover:bg-primary/20 transition-colors" data-page="ranking">
+          <i class="fa fa-star w-5 text-center mr-3 text-primary"></i>
+          <span>排行榜</span>
+        </a>
+      </li>
+      <li>
+        <a href="discover.html" class="nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-sidebar-hover transition-colors" data-page="discover">
+          <i class="fa fa-compass w-5 text-center mr-3 text-gray-500"></i>
+          <span>发现</span>
+        </a>
+      </li>
+      <li class="border-t border-sidebar-border my-2"></li>
+      <li>
+        <a href="#" class="nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-sidebar-hover transition-colors">
+          <i class="fa fa-history w-5 text-center mr-3 text-gray-500"></i>
+          <span>阅读历史</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-sidebar-hover transition-colors">
+          <i class="fa fa-download w-5 text-center mr-3 text-gray-500"></i>
+          <span>下载管理</span>
+        </a>
+      </li>
+      <li class="border-t border-sidebar-border my-2"></li>
+      <li>
+        <a href="settings.html" class="nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-sidebar-hover transition-colors">
+          <i class="fa fa-cog w-5 text-center mr-3 text-gray-500"></i>
+          <span>设置</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-sidebar-hover transition-colors">
+          <i class="fa fa-question-circle w-5 text-center mr-3 text-gray-500"></i>
+          <span>帮助中心</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  
+  <!-- 遮罩层 -->
+  <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 opacity-0 pointer-events-none transition-opacity duration-300 z-30"></div>
+  
+  <!-- 主内容区 -->
+  <div class="min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white border-b border-gray-200 shadow-sm z-30">
+      <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+        <!-- 左侧菜单按钮 -->
+        <button id="openSidebar" class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+          <i class="fa fa-bars text-lg text-gray-600"></i>
+        </button>
+        
+        <!-- 标题 -->
+        <h1 class="text-xl font-bold text-gray-800">排行榜</h1>
+        
+        <!-- 右侧搜索按钮 -->
+        <button id="searchBtn" class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+          <i class="fa fa-search text-lg text-gray-600"></i>
+        </button>
+      </div>
+    </header>
+    
+    <!-- 主要内容 -->
+    <main class="flex-1 overflow-y-auto">
+      <div class="container mx-auto px-4 py-6">
+        <!-- 排行榜标签 -->
+        <div class="bg-white rounded-xl shadow-sm p-4 mb-6 animate-fade-in relative">
+          <div class="flex overflow-x-auto space-x-4 pb-2 scrollbar-hide" id="rankTabs">
+            <div class="rank-tab active" data-tab="hot">热门榜</div>
+            <div class="rank-tab" data-tab="new">新书榜</div>
+            <div class="rank-tab" data-tab="click">点击榜</div>
+            <div class="rank-tab" data-tab="collect">收藏榜</div>
+            <div class="rank-tab" data-tab="recommend">推荐榜</div>
+            <div class="rank-tab" data-tab="word">字数榜</div>
+          </div>
+          <!-- 滚动提示箭头 -->
+          <div class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white shadow-md rounded-full p-1 hidden md:block" id="rankScrollLeft">
+            <i class="fa fa-chevron-left text-gray-600 text-xs"></i>
+          </div>
+          <div class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white shadow-md rounded-full p-1 hidden md:block" id="rankScrollRight">
+            <i class="fa fa-chevron-right text-gray-600 text-xs"></i>
+          </div>
+        </div>
+        
+        <!-- 排行榜内容 -->
+        <div class="bg-white rounded-xl shadow-sm p-4 animate-fade-in" style="animation-delay: 0.1s;">
+          <!-- 热门榜 -->
+          <div id="hot" class="rank-content">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-xl font-bold text-gray-800">热门榜</h2>
+              <span class="text-sm text-gray-500">更新于 2024-12-12</span>
+            </div>
+            <div class="space-y-4">
+              <!-- 排行第1 -->
+              <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <div class="rank-number top3 mr-3">1</div>
+                <div class="w-16 h-24 mr-3 flex-shrink-0">
+                  <img src="https://picsum.photos/seed/hot1/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">星辰大海：宇宙的终极奥秘</h3>
+                  <div class="flex items-center text-xs text-gray-500 mb-2">
+                    <span class="mr-3">作者：宇宙探索者</span>
+                    <span class="mr-3">玄幻</span>
+                    <span class="mr-3">9.8分</span>
+                  </div>
+                  <p class="text-xs text-gray-600 line-clamp-2">
+                    这是一个关于宇宙探索的宏大故事，主角在探索宇宙的过程中，发现了许多未知的文明和神秘的力量。
+                  </p>
+                </div>
+              </div>
+              
+              <!-- 排行第2 -->
+              <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <div class="rank-number top3 mr-3">2</div>
+                <div class="w-16 h-24 mr-3 flex-shrink-0">
+                  <img src="https://picsum.photos/seed/hot2/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">龙的传人：远古传说</h3>
+                  <div class="flex items-center text-xs text-gray-500 mb-2">
+                    <span class="mr-3">作者：远古神话</span>
+                    <span class="mr-3">奇幻</span>
+                    <span class="mr-3">9.6分</span>
+                  </div>
+                  <p class="text-xs text-gray-600 line-clamp-2">
+                    古老的龙族传说，神秘的魔法世界，主角在这个世界中不断成长，最终成为了一名强大的龙骑士。
+                  </p>
+                </div>
+              </div>
+              
+              <!-- 排行第3 -->
+              <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <div class="rank-number top3 mr-3">3</div>
+                <div class="w-16 h-24 mr-3 flex-shrink-0">
+                  <img src="https://picsum.photos/seed/hot3/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">剑指苍穹：武侠传奇</h3>
+                  <div class="flex items-center text-xs text-gray-500 mb-2">
+                    <span class="mr-3">作者：武侠大师</span>
+                    <span class="mr-3">武侠</span>
+                    <span class="mr-3">9.4分</span>
+                  </div>
+                  <p class="text-xs text-gray-600 line-clamp-2">
+                    这是一个关于武侠世界的故事，主角在江湖中历练，最终成为了一名顶尖的武林高手。
+                  </p>
+                </div>
+              </div>
+              
+              <!-- 排行第4-10 -->
+              <div class="space-y-3">
+                <!-- 排行第4 -->
+                <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div class="rank-number other mr-3">4</div>
+                  <div class="w-14 h-21 mr-3 flex-shrink-0">
+                    <img src="https://picsum.photos/seed/hot4/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">仙路漫漫：修真世界</h3>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <span class="mr-3">作者：修真者</span>
+                      <span class="mr-3">仙侠</span>
+                      <span class="mr-3">9.2分</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 排行第5 -->
+                <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div class="rank-number other mr-3">5</div>
+                  <div class="w-14 h-21 mr-3 flex-shrink-0">
+                    <img src="https://picsum.photos/seed/hot5/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">未来世界：人工智能</h3>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <span class="mr-3">作者：科技达人</span>
+                      <span class="mr-3">科幻</span>
+                      <span class="mr-3">9.0分</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 排行第6 -->
+                <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div class="rank-number other mr-3">6</div>
+                  <div class="w-14 h-21 mr-3 flex-shrink-0">
+                    <img src="https://picsum.photos/seed/hot6/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">都市异能：超能力者</h3>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <span class="mr-3">作者：都市超人</span>
+                      <span class="mr-3">都市</span>
+                      <span class="mr-3">8.8分</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 排行第7 -->
+                <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div class="rank-number other mr-3">7</div>
+                  <div class="w-14 h-21 mr-3 flex-shrink-0">
+                    <img src="https://picsum.photos/seed/hot7/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">大明王朝：洪武大帝</h3>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <span class="mr-3">作者：历史学者</span>
+                      <span class="mr-3">历史</span>
+                      <span class="mr-3">8.6分</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 排行第8 -->
+                <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div class="rank-number other mr-3">8</div>
+                  <div class="w-14 h-21 mr-3 flex-shrink-0">
+                    <img src="https://picsum.photos/seed/hot8/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">密室逃脱：死亡游戏</h3>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <span class="mr-3">作者：悬疑大师</span>
+                      <span class="mr-3">悬疑</span>
+                      <span class="mr-3">8.4分</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 排行第9 -->
+                <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div class="rank-number other mr-3">9</div>
+                  <div class="w-14 h-21 mr-3 flex-shrink-0">
+                    <img src="https://picsum.photos/seed/hot9/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">游戏世界：虚拟人生</h3>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <span class="mr-3">作者：游戏玩家</span>
+                      <span class="mr-3">游戏</span>
+                      <span class="mr-3">8.2分</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 排行第10 -->
+                <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div class="rank-number other mr-3">10</div>
+                  <div class="w-14 h-21 mr-3 flex-shrink-0">
+                    <img src="https://picsum.photos/seed/hot10/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">篮球之王：球场传奇</h3>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <span class="mr-3">作者：篮球迷</span>
+                      <span class="mr-3">体育</span>
+                      <span class="mr-3">8.0分</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 新书榜 -->
+          <div id="new" class="rank-content hidden">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-xl font-bold text-gray-800">新书榜</h2>
+              <span class="text-sm text-gray-500">更新于 2024-12-12</span>
+            </div>
+            <div class="space-y-3">
+              <!-- 排行第1-10 -->
+              <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <div class="rank-number top3 mr-3">1</div>
+                <div class="w-14 h-21 mr-3 flex-shrink-0">
+                  <img src="https://picsum.photos/seed/new1/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">魔法学院：新生入学</h3>
+                  <div class="flex items-center text-xs text-gray-500">
+                    <span class="mr-3">作者：魔法少女</span>
+                    <span class="mr-3">奇幻</span>
+                    <span class="mr-3">8.8分</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <div class="rank-number top3 mr-3">2</div>
+                <div class="w-14 h-21 mr-3 flex-shrink-0">
+                  <img src="https://picsum.photos/seed/new2/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">都市神医：妙手回春</h3>
+                  <div class="flex items-center text-xs text-gray-500">
+                    <span class="mr-3">作者：神医</span>
+                    <span class="mr-3">都市</span>
+                    <span class="mr-3">8.6分</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <div class="rank-number top3 mr-3">3</div>
+                <div class="w-14 h-21 mr-3 flex-shrink-0">
+                  <img src="https://picsum.photos/seed/new3/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">星际冒险：未知星系</h3>
+                  <div class="flex items-center text-xs text-gray-500">
+                    <span class="mr-3">作者：宇航员</span>
+                    <span class="mr-3">科幻</span>
+                    <span class="mr-3">8.4分</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 排行第4-10 -->
+              <div class="space-y-3">
+                <!-- 排行第4 -->
+                <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div class="rank-number other mr-3">4</div>
+                  <div class="w-14 h-21 mr-3 flex-shrink-0">
+                    <img src="https://picsum.photos/seed/new4/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">武道巅峰：强者为尊</h3>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <span class="mr-3">作者：武道家</span>
+                      <span class="mr-3">武侠</span>
+                      <span class="mr-3">8.2分</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 排行第5 -->
+                <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div class="rank-number other mr-3">5</div>
+                  <div class="w-14 h-21 mr-3 flex-shrink-0">
+                    <img src="https://picsum.photos/seed/new5/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">重生之都市大亨</h3>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <span class="mr-3">作者：重生者</span>
+                      <span class="mr-3">都市</span>
+                      <span class="mr-3">8.0分</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 排行第6 -->
+                <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div class="rank-number other mr-3">6</div>
+                  <div class="w-14 h-21 mr-3 flex-shrink-0">
+                    <img src="https://picsum.photos/seed/new6/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">幽灵侦探：解开谜团</h3>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <span class="mr-3">作者：侦探</span>
+                      <span class="mr-3">悬疑</span>
+                      <span class="mr-3">7.8分</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 排行第7 -->
+                <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div class="rank-number other mr-3">7</div>
+                  <div class="w-14 h-21 mr-3 flex-shrink-0">
+                    <img src="https://picsum.photos/seed/new7/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">足球小将：梦想启航</h3>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <span class="mr-3">作者：足球迷</span>
+                      <span class="mr-3">体育</span>
+                      <span class="mr-3">7.6分</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 排行第8 -->
+                <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div class="rank-number other mr-3">8</div>
+                  <div class="w-14 h-21 mr-3 flex-shrink-0">
+                    <img src="https://picsum.photos/seed/new8/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">修真者在现代</h3>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <span class="mr-3">作者：现代修真</span>
+                      <span class="mr-3">仙侠</span>
+                      <span class="mr-3">7.4分</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 排行第9 -->
+                <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div class="rank-number other mr-3">9</div>
+                  <div class="w-14 h-21 mr-3 flex-shrink-0">
+                    <img src="https://picsum.photos/seed/new9/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">未来战士：机甲时代</h3>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <span class="mr-3">作者：机甲迷</span>
+                      <span class="mr-3">科幻</span>
+                      <span class="mr-3">7.2分</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 排行第10 -->
+                <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div class="rank-number other mr-3">10</div>
+                  <div class="w-14 h-21 mr-3 flex-shrink-0">
+                    <img src="https://picsum.photos/seed/new10/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">校园恋爱：青春时光</h3>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <span class="mr-3">作者：校园达人</span>
+                      <span class="mr-3">言情</span>
+                      <span class="mr-3">7.0分</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 其他排行榜内容类似，这里只展示部分 -->
+          <div id="click" class="rank-content hidden">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-xl font-bold text-gray-800">点击榜</h2>
+              <span class="text-sm text-gray-500">更新于 2024-12-12</span>
+            </div>
+            <div class="space-y-4">
+              <!-- 排行第1-3 -->
+              <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <div class="rank-number top3 mr-3">1</div>
+                <div class="w-16 h-24 mr-3 flex-shrink-0">
+                  <img src="https://picsum.photos/seed/click1/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">全球高武：我有一个世界</h3>
+                  <div class="flex items-center text-xs text-gray-500 mb-2">
+                    <span class="mr-3">作者：武破苍穹</span>
+                    <span class="mr-3">玄幻</span>
+                    <span class="mr-3">9.9分</span>
+                  </div>
+                  <p class="text-xs text-gray-600 line-clamp-2">
+                    这是一个关于全球高武的故事，主角拥有一个属于自己的世界，不断成长，最终成为了一名顶尖的武者。
+                  </p>
+                </div>
+                <div class="flex flex-col items-center space-y-2 ml-3">
+                  <button class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center hover:bg-primary/90 transition-colors">
+                    <i class="fa fa-book-open text-xs"></i>
+                  </button>
+                  <button class="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center hover:bg-gray-200 transition-colors">
+                    <i class="fa fa-bookmark-o text-xs"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- 排行第4-10 -->
+              <div class="space-y-3">
+                <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div class="rank-number other mr-3">4</div>
+                  <div class="w-14 h-21 mr-3 flex-shrink-0">
+                    <img src="https://picsum.photos/seed/click4/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">第一序列：我有系统</h3>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <span class="mr-3">作者：会说话的肘子</span>
+                      <span class="mr-3">科幻</span>
+                      <span class="mr-3">9.5分</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div id="collect" class="rank-content hidden">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-xl font-bold text-gray-800">收藏榜</h2>
+              <span class="text-sm text-gray-500">更新于 2024-12-12</span>
+            </div>
+            <div class="space-y-4">
+              <!-- 排行第1-3 -->
+              <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <div class="rank-number top3 mr-3">1</div>
+                <div class="w-16 h-24 mr-3 flex-shrink-0">
+                  <img src="https://picsum.photos/seed/collect1/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">遮天：我是叶凡</h3>
+                  <div class="flex items-center text-xs text-gray-500 mb-2">
+                    <span class="mr-3">作者：辰东</span>
+                    <span class="mr-3">仙侠</span>
+                    <span class="mr-3">9.9分</span>
+                  </div>
+                  <p class="text-xs text-gray-600 line-clamp-2">
+                    这是一个关于遮天的故事，主角是叶凡，不断成长，最终成为了一名顶尖的修仙者。
+                  </p>
+                </div>
+                <div class="flex flex-col items-center space-y-2 ml-3">
+                  <button class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center hover:bg-primary/90 transition-colors">
+                    <i class="fa fa-book-open text-xs"></i>
+                  </button>
+                  <button class="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center hover:bg-gray-200 transition-colors">
+                    <i class="fa fa-bookmark-o text-xs"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- 排行第4-10 -->
+              <div class="space-y-3">
+                <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div class="rank-number other mr-3">4</div>
+                  <div class="w-14 h-21 mr-3 flex-shrink-0">
+                    <img src="https://picsum.photos/seed/collect4/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">凡人修仙传：我是韩立</h3>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <span class="mr-3">作者：忘语</span>
+                      <span class="mr-3">仙侠</span>
+                      <span class="mr-3">9.5分</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div id="recommend" class="rank-content hidden">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-xl font-bold text-gray-800">推荐榜</h2>
+              <span class="text-sm text-gray-500">更新于 2024-12-12</span>
+            </div>
+            <div class="space-y-4">
+              <!-- 排行第1-3 -->
+              <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <div class="rank-number top3 mr-3">1</div>
+                <div class="w-16 h-24 mr-3 flex-shrink-0">
+                  <img src="https://picsum.photos/seed/recommend1/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">雪中悍刀行：我是徐凤年</h3>
+                  <div class="flex items-center text-xs text-gray-500 mb-2">
+                    <span class="mr-3">作者：烽火戏诸侯</span>
+                    <span class="mr-3">武侠</span>
+                    <span class="mr-3">9.9分</span>
+                  </div>
+                  <p class="text-xs text-gray-600 line-clamp-2">
+                    这是一个关于雪中悍刀行的故事，主角是徐凤年，不断成长，最终成为了一名顶尖的武者。
+                  </p>
+                </div>
+                <div class="flex flex-col items-center space-y-2 ml-3">
+                  <button class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center hover:bg-primary/90 transition-colors">
+                    <i class="fa fa-book-open text-xs"></i>
+                  </button>
+                  <button class="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center hover:bg-gray-200 transition-colors">
+                    <i class="fa fa-bookmark-o text-xs"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- 排行第4-10 -->
+              <div class="space-y-3">
+                <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div class="rank-number other mr-3">4</div>
+                  <div class="w-14 h-21 mr-3 flex-shrink-0">
+                    <img src="https://picsum.photos/seed/recommend4/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">将夜：我是宁缺</h3>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <span class="mr-3">作者：猫腻</span>
+                      <span class="mr-3">玄幻</span>
+                      <span class="mr-3">9.5分</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div id="word" class="rank-content hidden">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-xl font-bold text-gray-800">字数榜</h2>
+              <span class="text-sm text-gray-500">更新于 2024-12-12</span>
+            </div>
+            <div class="space-y-4">
+              <!-- 排行第1-3 -->
+              <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <div class="rank-number top3 mr-3">1</div>
+                <div class="w-16 h-24 mr-3 flex-shrink-0">
+                  <img src="https://picsum.photos/seed/word1/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">从零开始：我的游戏人生</h3>
+                  <div class="flex items-center text-xs text-gray-500 mb-2">
+                    <span class="mr-3">作者：雷云风暴</span>
+                    <span class="mr-3">网游</span>
+                    <span class="mr-3">8.9分</span>
+                  </div>
+                  <p class="text-xs text-gray-600 line-clamp-2">
+                    这是一个关于从零开始的故事，主角在游戏中不断成长，最终成为了一名顶尖的玩家。
+                  </p>
+                </div>
+                <div class="flex flex-col items-center space-y-2 ml-3">
+                  <button class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center hover:bg-primary/90 transition-colors">
+                    <i class="fa fa-book-open text-xs"></i>
+                  </button>
+                  <button class="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center hover:bg-gray-200 transition-colors">
+                    <i class="fa fa-bookmark-o text-xs"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- 排行第4-10 -->
+              <div class="space-y-3">
+                <div class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div class="rank-number other mr-3">4</div>
+                  <div class="w-14 h-21 mr-3 flex-shrink-0">
+                    <img src="https://picsum.photos/seed/word4/200/300" alt="小说封面" class="w-full h-full object-cover rounded">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-medium text-gray-800 mb-1 line-clamp-1">带着农场混异界：我是赵海</h3>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <span class="mr-3">作者：明宇</span>
+                      <span class="mr-3">玄幻</span>
+                      <span class="mr-3">8.5分</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- JavaScript -->
+  <script>
+    // 侧边栏控制
+    const openSidebarBtn = document.getElementById('openSidebar');
+    const closeSidebarBtn = document.getElementById('closeSidebar');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    // 打开侧边栏
+    openSidebarBtn.addEventListener('click', () => {
+      sidebar.classList.remove('-translate-x-full');
+      sidebarOverlay.classList.remove('opacity-0', 'pointer-events-none');
+    });
+    
+    // 关闭侧边栏
+    closeSidebarBtn.addEventListener('click', closeSidebar);
+    sidebarOverlay.addEventListener('click', closeSidebar);
+    
+    function closeSidebar() {
+      sidebar.classList.add('-translate-x-full');
+      sidebarOverlay.classList.add('opacity-0', 'pointer-events-none');
+    }
+    
+    // 点击侧边栏菜单项时关闭侧边栏
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        closeSidebar();
+      });
+    });
+    
+    // 搜索按钮
+    const searchBtn = document.getElementById('searchBtn');
+    searchBtn.addEventListener('click', () => {
+      alert('搜索功能暂未实现');
+    });
+    
+    // 排行榜标签切换
+    const rankTabs = document.querySelectorAll('.rank-tab');
+    const rankContents = document.querySelectorAll('.rank-content');
+    
+    // 确保初始状态只有一个排行榜显示
+    document.addEventListener('DOMContentLoaded', () => {
+      // 移除所有内容的hidden类，然后只显示默认的热门榜
+      rankContents.forEach(content => content.classList.add('hidden'));
+      document.getElementById('hot').classList.remove('hidden');
+    });
+    
+    rankTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        try {
+          // 移除所有标签的active类
+          rankTabs.forEach(t => t.classList.remove('active'));
+          // 为当前标签添加active类
+          tab.classList.add('active');
+          
+          // 隐藏所有内容
+          rankContents.forEach(content => content.classList.add('hidden'));
+          // 显示当前标签对应的内容
+          const tabId = tab.getAttribute('data-tab');
+          const contentElement = document.getElementById(tabId);
+          if (contentElement) {
+            contentElement.classList.remove('hidden');
+          } else {
+            console.error(`未找到ID为${tabId}的内容元素`);
+          }
+        } catch (error) {
+          console.error('标签切换出错:', error);
+        }
+      });
+    });
+    
+    // 小说卡片点击事件
+    document.addEventListener('DOMContentLoaded', () => {
+      const bookItems = document.querySelectorAll('.flex.items-center.rounded-lg');
+      bookItems.forEach(item => {
+        // 添加cursor-pointer类使卡片显示为可点击状态
+        item.classList.add('cursor-pointer');
+        
+        item.addEventListener('click', () => {
+          window.location.href = 'novel_detail.html?from=ranking';
+        });
+      });
+    });
+    
+    // 排行榜标签滚动功能
+    const rankTabsContainer = document.getElementById('rankTabs');
+    const rankScrollLeftBtn = document.getElementById('rankScrollLeft');
+    const rankScrollRightBtn = document.getElementById('rankScrollRight');
+    const rankScrollAmount = 200; // 每次滚动的距离
+    
+    // 左侧滚动
+    rankScrollLeftBtn.addEventListener('click', () => {
+      rankTabsContainer.scrollBy({ left: -rankScrollAmount, behavior: 'smooth' });
+    });
+    
+    // 右侧滚动
+    rankScrollRightBtn.addEventListener('click', () => {
+      rankTabsContainer.scrollBy({ left: rankScrollAmount, behavior: 'smooth' });
+    });
+  </script>
+</body>
+</html>

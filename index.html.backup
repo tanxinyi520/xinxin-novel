@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>欣欣小说 - 发现你的下一本好书</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 自定义Tailwind配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#6366f1', // 主色调：靛蓝色
+            secondary: '#ec4899', // 辅助色：粉红色
+            accent: '#8b5cf6', // 强调色：紫色
+            sidebar: {
+              bg: "#FFFFFF",
+              text: "#333333",
+              hover: "#F5F5F5",
+              border: "#EAEAEA"
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .card-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+      .scrollbar-hide {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .animate-fade-in {
+        animation: fadeIn 0.5s ease forwards;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    }
+  </style>
+  
+  <!-- 全局样式 -->
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+    .page {
+      display: none;
+    }
+    .page.active {
+      display: block;
+    }
+    .book-card {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800">
+  <!-- 侧边栏 -->
+  <div id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-sidebar-bg border-r border-sidebar-border transform -translate-x-full transition-transform duration-300 ease-in-out z-40 overflow-y-auto">
+    <!-- 侧边栏头部 -->
+    <div class="p-4 border-b border-sidebar-border flex justify-between items-center">
+      <div class="flex items-center">
+        <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+          <i class="fa fa-book text-primary text-xl"></i>
+        </div>
+        <div class="ml-3">
+          <h3 class="font-medium text-sidebar-text">游客用户</h3>
+          <p class="text-xs text-gray-500">登录后享受更多功能</p>
+        </div>
+      </div>
+      <button id="closeSidebar" class="p-2 rounded-full hover:bg-sidebar-hover transition-colors">
+        <i class="fa fa-times text-sidebar-text"></i>
+      </button>
+    </div>
+    
+    <!-- 侧边栏导航 -->
+    <nav class="p-4">
+      <div class="space-y-2">
+        <a href="#home" class="nav-link flex items-center gap-3 p-3 rounded-lg bg-primary/10 text-primary font-medium hover:bg-primary/20 transition-colors">
+          <i class="fa fa-home text-lg"></i>
+          <span>首页</span>
+        </a>
+        <a href="#discover" class="nav-link flex items-center gap-3 p-3 rounded-lg text-sidebar-text hover:bg-sidebar-hover transition-colors">
+          <i class="fa fa-compass text-lg"></i>
+          <span>发现好书</span>
+        </a>
+        <a href="#ranking" class="nav-link flex items-center gap-3 p-3 rounded-lg text-sidebar-text hover:bg-sidebar-hover transition-colors">
+          <i class="fa fa-trophy text-lg"></i>
+          <span>排行榜</span>
+        </a>
+        <a href="#bookshelf" class="nav-link flex items-center gap-3 p-3 rounded-lg text-sidebar-text hover:bg-sidebar-hover transition-colors">
+          <i class="fa fa-bookmark text-lg"></i>
+          <span>我的书架</span>
+        </a>
+        <a href="#history" class="nav-link flex items-center gap-3 p-3 rounded-lg text-sidebar-text hover:bg-sidebar-hover transition-colors">
+          <i class="fa fa-history text-lg"></i>
+          <span>阅读历史</span>
+        </a>
+        <a href="#download" class="nav-link flex items-center gap-3 p-3 rounded-lg text-sidebar-text hover:bg-sidebar-hover transition-colors">
+          <i class="fa fa-download text-lg"></i>
+          <span>下载管理</span>
+        </a>
+        <a href="#help" class="nav-link flex items-center gap-3 p-3 rounded-lg text-sidebar-text hover:bg-sidebar-hover transition-colors">
+          <i class="fa fa-question-circle text-lg"></i>
+          <span>帮助中心</span>
+        </a>
+        <a href="#settings" class="nav-link flex items-center gap-3 p-3 rounded-lg text-sidebar-text hover:bg-sidebar-hover transition-colors">
+          <i class="fa fa-cog text-lg"></i>
+          <span>设置</span>
+        </a>
+      </div>
+    </nav>
+  </div>
+  
+  <!-- 侧边栏遮罩 -->
+  <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 opacity-0 pointer-events-none transition-opacity duration-300 z-30"></div>
+  
+  <!-- 主内容区 -->
+  <div class="ml-0 md:ml-64 transition-all duration-300">
+    <!-- 顶部导航栏 -->
+    <header class="fixed top-0 left-0 right-0 md:left-64 bg-white shadow-sm z-20 transition-all duration-300">
+      <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+        <!-- 移动端菜单按钮 -->
+        <button id="openSidebar" class="md:hidden p-2 rounded-full hover:bg-gray-100 transition-colors">
+          <i class="fa fa-bars text-gray-700"></i>
+        </button>
+        
+        <!-- Logo -->
+        <div class="flex items-center">
+          <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+            <i class="fa fa-book text-primary text-xl"></i>
+          </div>
+          <h1 class="ml-2 text-xl font-bold text-gray-800">欣欣小说</h1>
+        </div>
+        
+        <!-- 桌面端导航 -->
+        <nav class="hidden md:flex items-center space-x-6">
+          <a href="#home" class="desktop-nav-link text-primary font-medium hover:text-primary/80 transition-colors">首页</a>
+          <a href="#discover" class="desktop-nav-link text-gray-600 hover:text-primary transition-colors">发现好书</a>
+          <a href="#ranking" class="desktop-nav-link text-gray-600 hover:text-primary transition-colors">排行榜</a>
+          <a href="#bookshelf" class="desktop-nav-link text-gray-600 hover:text-primary transition-colors">我的书架</a>
+        </nav>
+        
+        <!-- 搜索框 -->
+        <div class="hidden md:block relative w-64">
+          <input type="text" placeholder="搜索小说..." class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+        </div>
+        
+        <!-- 用户菜单 -->
+        <div class="flex items-center space-x-4">
+          <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+            <i class="fa fa-bell text-gray-600"></i>
+          </button>
+          <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+            <i class="fa fa-comment-o text-gray-600"></i>
+          </button>
+          <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
+            <img src="https://picsum.photos/seed/user/100/100" alt="用户头像" class="w-full h-full object-cover">
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <!-- 主内容 -->
+    <main class="pt-16 pb-12">
+      <!-- 首页内容 -->
+      <div id="home" class="page active">
+        <div class="container mx-auto px-4 py-6">
+          <h2 class="text-2xl font-bold mb-6">首页</h2>
+          <div class="bg-white rounded-xl shadow-sm p-4">
+            <p class="text-center py-12 text-gray-500">
+              <i class="fa fa-home text-5xl mb-3"></i>
+              <br>
+              首页内容正在建设中
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 发现页面 -->
+      <div id="discover" class="page">
+        <div class="container mx-auto px-4 py-6">
+          <h2 class="text-2xl font-bold mb-6">发现好书</h2>
+          
+          <!-- 搜索框 -->
+          <div class="bg-white rounded-xl shadow-sm p-4 mb-8 animate-fade-in">
+            <div class="relative">
+              <input type="text" placeholder="搜索书名、作者或分类" class="w-full pl-10 pr-4 py-3 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary">
+              <i class="fa fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            </div>
+          </div>
+          
+          <!-- 热门分类 -->
+          <div class="mb-10 animate-fade-in" style="animation-delay: 0.1s;">
+            <h3 class="text-xl font-bold mb-4 flex items-center">
+              <i class="fa fa-th-large text-primary mr-2"></i>
+              热门分类
+            </h3>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              <a href="#" class="category-tag bg-primary/10 text-primary p-4 rounded-xl flex flex-col items-center justify-center text-center hover:shadow-md transition-shadow">
+                <i class="fa fa-bolt text-xl mb-2"></i>
+                <span class="text-sm font-medium">玄幻</span>
+              </a>
+              <a href="#" class="category-tag bg-secondary/10 text-secondary p-4 rounded-xl flex flex-col items-center justify-center text-center hover:shadow-md transition-shadow">
+                <i class="fa fa-fire text-xl mb-2"></i>
+                <span class="text-sm font-medium">修真</span>
+              </a>
+              <a href="#" class="category-tag bg-accent/10 text-accent p-4 rounded-xl flex flex-col items-center justify-center text-center hover:shadow-md transition-shadow">
+                <i class="fa fa-building text-xl mb-2"></i>
+                <span class="text-sm font-medium">都市</span>
+              </a>
+              <a href="#" class="category-tag bg-green-500/10 text-green-500 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:shadow-md transition-shadow">
+                <i class="fa fa-sword text-xl mb-2"></i>
+                <span class="text-sm font-medium">武侠</span>
+              </a>
+              <a href="#" class="category-tag bg-purple-500/10 text-purple-500 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:shadow-md transition-shadow">
+                <i class="fa fa-diamond text-xl mb-2"></i>
+                <span class="text-sm font-medium">奇幻</span>
+              </a>
+              <a href="#" class="category-tag bg-pink-500/10 text-pink-500 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:shadow-md transition-shadow">
+                <i class="fa fa-heart text-xl mb-2"></i>
+                <span class="text-sm font-medium">言情</span>
+              </a>
+              <a href="#" class="category-tag bg-blue-500/10 text-blue-500 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:shadow-md transition-shadow">
+                <i class="fa fa-rocket text-xl mb-2"></i>
+                <span class="text-sm font-medium">科幻</span>
+              </a>
+              <a href="#" class="category-tag bg-yellow-500/10 text-yellow-500 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:shadow-md transition-shadow">
+                <i class="fa fa-history text-xl mb-2"></i>
+                <span class="text-sm font-medium">历史</span>
+              </a>
+              <a href="#" class="category-tag bg-red-500/10 text-red-500 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:shadow-md transition-shadow">
+                <i class="fa fa-ghost text-xl mb-2"></i>
+                <span class="text-sm font-medium">悬疑</span>
+              </a>
+              <a href="#" class="category-tag bg-teal-500/10 text-teal-500 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:shadow-md transition-shadow">
+                <i class="fa fa-graduation-cap text-xl mb-2"></i>
+                <span class="text-sm font-medium">校园</span>
+              </a>
+              <a href="#" class="category-tag bg-indigo-500/10 text-indigo-500 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:shadow-md transition-shadow">
+                <i class="fa fa-medkit text-xl mb-2"></i>
+                <span class="text-sm font-medium">医疗</span>
+              </a>
+              <a href="#" class="category-tag bg-gray-500/10 text-gray-500 p-4 rounded-xl flex flex-col items-center justify-center text-center hover:shadow-md transition-shadow">
+                <i class="fa fa-list text-xl mb-2"></i>
+                <span class="text-sm font-medium">更多</span>
+              </a>
+            </div>
+          </div>
+          
+          <!-- 推荐小说 -->
+          <div class="mb-10 animate-fade-in" style="animation-delay: 0.2s;">
+            <h3 class="text-xl font-bold mb-4 flex items-center">
+              <i class="fa fa-star text-primary mr-2"></i>
+              为你推荐
+            </h3>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              <!-- 小说1 -->
+              <div class="book-card card-hover cursor-pointer">
+                <div class="relative">
+                  <img src="https://picsum.photos/seed/discover1/200/300" alt="小说封面" class="w-full h-48 object-cover rounded-lg">
+                  <div class="absolute top-2 right-2 bg-primary text-white text-xs px-2 py-1 rounded">
+                    玄幻
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <h4 class="font-medium text-sm line-clamp-2">星辰大海：宇宙的终极奥秘</h4>
+                  <p class="text-xs text-gray-500">作者：宇宙探索者</p>
+                  <div class="flex items-center justify-between mt-1">
+                    <div class="flex items-center text-xs text-yellow-500">
+                      <i class="fa fa-star"></i>
+                      <span class="ml-1">9.8</span>
+                    </div>
+                    <span class="text-xs text-gray-500">567.8万</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 小说2 -->
+              <div class="book-card card-hover cursor-pointer">
+                <div class="relative">
+                  <img src="https://picsum.photos/seed/discover2/200/300" alt="小说封面" class="w-full h-48 object-cover rounded-lg">
+                  <div class="absolute top-2 right-2 bg-secondary text-white text-xs px-2 py-1 rounded">
+                    修真
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <h4 class="font-medium text-sm line-clamp-2">仙路漫漫：修真世界</h4>
+                  <p class="text-xs text-gray-500">作者：修真者</p>
+                  <div class="flex items-center justify-between mt-1">
+                    <div class="flex items-center text-xs text-yellow-500">
+                      <i class="fa fa-star"></i>
+                      <span class="ml-1">9.6</span>
+                    </div>
+                    <span class="text-xs text-gray-500">432.1万</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 小说3 -->
+              <div class="book-card card-hover cursor-pointer">
+                <div class="relative">
+                  <img src="https://picsum.photos/seed/discover3/200/300" alt="小说封面" class="w-full h-48 object-cover rounded-lg">
+                  <div class="absolute top-2 right-2 bg-accent text-white text-xs px-2 py-1 rounded">
+                    都市
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <h4 class="font-medium text-sm line-clamp-2">都市最强医圣</h4>
+                  <p class="text-xs text-gray-500">作者：医道圣手</p>
+                  <div class="flex items-center justify-between mt-1">
+                    <div class="flex items-center text-xs text-yellow-500">
+                      <i class="fa fa-star"></i>
+                      <span class="ml-1">9.5</span>
+                    </div>
+                    <span class="text-xs text-gray-500">234.5万</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 小说4 -->
+              <div class="book-card card-hover cursor-pointer">
+                <div class="relative">
+                  <img src="https://picsum.photos/seed/discover4/200/300" alt="小说封面" class="w-full h-48 object-cover rounded-lg">
+                  <div class="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
+                    武侠
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <h4 class="font-medium text-sm line-clamp-2">剑指苍穹：武侠传奇</h4>
+                  <p class="text-xs text-gray-500">作者：武侠大师</p>
+                  <div class="flex items-center justify-between mt-1">
+                    <div class="flex items-center text-xs text-yellow-500">
+                      <i class="fa fa-star"></i>
+                      <span class="ml-1">9.4</span>
+                    </div>
+                    <span class="text-xs text-gray-500">189.2万</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 小说5 -->
+              <div class="book-card card-hover cursor-pointer">
+                <div class="relative">
+                  <img src="https://picsum.photos/seed/discover5/200/300" alt="小说封面" class="w-full h-48 object-cover rounded-lg">
+                  <div class="absolute top-2 right-2 bg-purple-500 text-white text-xs px-2 py-1 rounded">
+                    奇幻
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <h4 class="font-medium text-sm line-clamp-2">魔法学院：新生入学</h4>
+                  <p class="text-xs text-gray-500">作者：魔法少女</p>
+                  <div class="flex items-center justify-between mt-1">
+                    <div class="flex items-center text-xs text-yellow-500">
+                      <i class="fa fa-star"></i>
+                      <span class="ml-1">9.3</span>
+                    </div>
+                    <span class="text-xs text-gray-500">156.7万</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 小说6 -->
+              <div class="book-card card-hover cursor-pointer">
+                <div class="relative">
+                  <img src="https://picsum.photos/seed/discover6/200/300" alt="小说封面" class="w-full h-48 object-cover rounded-lg">
+                  <div class="absolute top-2 right-2 bg-pink-500 text-white text-xs px-2 py-1 rounded">
+                    言情
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <h4 class="font-medium text-sm line-clamp-2">都市爱情故事</h4>
+                  <p class="text-xs text-gray-500">作者：言情天后</p>
+                  <div class="flex items-center justify-between mt-1">
+                    <div class="flex items-center text-xs text-yellow-500">
+                      <i class="fa fa-star"></i>
+                      <span class="ml-1">9.1</span>
+                    </div>
+                    <span class="text-xs text-gray-500">123.4万</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 小说7 -->
+              <div class="book-card card-hover cursor-pointer">
+                <div class="relative">
+                  <img src="https://picsum.photos/seed/discover7/200/300" alt="小说封面" class="w-full h-48 object-cover rounded-lg">
+                  <div class="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                    科幻
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <h4 class="font-medium text-sm line-clamp-2">未来世界：人工智能</h4>
+                  <p class="text-xs text-gray-500">作者：科技达人</p>
+                  <div class="flex items-center justify-between mt-1">
+                    <div class="flex items-center text-xs text-yellow-500">
+                      <i class="fa fa-star"></i>
+                      <span class="ml-1">8.9</span>
+                    </div>
+                    <span class="text-xs text-gray-500">112.3万</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 小说8 -->
+              <div class="book-card card-hover cursor-pointer">
+                <div class="relative">
+                  <img src="https://picsum.photos/seed/discover8/200/300" alt="小说封面" class="w-full h-48 object-cover rounded-lg">
+                  <div class="absolute top-2 right-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded">
+                    历史
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <h4 class="font-medium text-sm line-clamp-2">大唐盛世：贞观之治</h4>
+                  <p class="text-xs text-gray-500">作者：历史学者</p>
+                  <div class="flex items-center justify-between mt-1">
+                    <div class="flex items-center text-xs text-yellow-500">
+                      <i class="fa fa-star"></i>
+                      <span class="ml-1">8.8</span>
+                    </div>
+                    <span class="text-xs text-gray-500">98.7万</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 小说9 -->
+              <div class="book-card card-hover cursor-pointer">
+                <div class="relative">
+                  <img src="https://picsum.photos/seed/discover9/200/300" alt="小说封面" class="w-full h-48 object-cover rounded-lg">
+                  <div class="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
+                    悬疑
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <h4 class="font-medium text-sm line-clamp-2">都市谜案：神探归来</h4>
+                  <p class="text-xs text-gray-500">作者：推理大师</p>
+                  <div class="flex items-center justify-between mt-1">
+                    <div class="flex items-center text-xs text-yellow-500">
+                      <i class="fa fa-star"></i>
+                      <span class="ml-1">8.7</span>
+                    </div>
+                    <span class="text-xs text-gray-500">87.6万</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 小说10 -->
+              <div class="book-card card-hover cursor-pointer">
+                <div class="relative">
+                  <img src="https://picsum.photos/seed/discover10/200/300" alt="小说封面" class="w-full h-48 object-cover rounded-lg">
+                  <div class="absolute top-2 right-2 bg-teal-500 text-white text-xs px-2 py-1 rounded">
+                    校园
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <h4 class="font-medium text-sm line-clamp-2">青春校园：美好时光</h4>
+                  <p class="text-xs text-gray-500">作者：校园作家</p>
+                  <div class="flex items-center justify-between mt-1">
+                    <div class="flex items-center text-xs text-yellow-500">
+                      <i class="fa fa-star"></i>
+                      <span class="ml-1">8.6</span>
+                    </div>
+                    <span class="text-xs text-gray-500">76.5万</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 小说11 -->
+              <div class="book-card card-hover cursor-pointer">
+                <div class="relative">
+                  <img src="https://picsum.photos/seed/discover11/200/300" alt="小说封面" class="w-full h-48 object-cover rounded-lg">
+                  <div class="absolute top-2 right-2 bg-indigo-500 text-white text-xs px-2 py-1 rounded">
+                    医疗
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <h4 class="font-medium text-sm line-clamp-2">医道巅峰：拯救生命</h4>
+                  <p class="text-xs text-gray-500">作者：白衣天使</p>
+                  <div class="flex items-center justify-between mt-1">
+                    <div class="flex items-center text-xs text-yellow-500">
+                      <i class="fa fa-star"></i>
+                      <span class="ml-1">8.5</span>
+                    </div>
+                    <span class="text-xs text-gray-500">65.4万</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 小说12 -->
+              <div class="book-card card-hover cursor-pointer">
+                <div class="relative">
+                  <img src="https://picsum.photos/seed/discover12/200/300" alt="小说封面" class="w-full h-48 object-cover rounded-lg">
+                  <div class="absolute top-2 right-2 bg-gray-500 text-white text-xs px-2 py-1 rounded">
+                    其他
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <h4 class="font-medium text-sm line-clamp-2">神秘世界：未知探索</h4>
+                  <p class="text-xs text-gray-500">作者：探险家</p>
+                  <div class="flex items-center justify-between mt-1">
+                    <div class="flex items-center text-xs text-yellow-500">
+                      <i class="fa fa-star"></i>
+                      <span class="ml-1">8.4</span>
+                    </div>
+                    <span class="text-xs text-gray-500">54.3万</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 排行榜页面 -->
+      <div id="ranking" class="page">
+        <div class="container mx-auto px-4 py-6">
+          <h2 class="text-2xl font-bold mb-6">排行榜</h2>
+          <div class="bg-white rounded-xl shadow-sm p-4">
+            <p class="text-center py-12 text-gray-500">
+              <i class="fa fa-trophy text-5xl mb-3"></i>
+              <br>
+              排行榜内容正在建设中
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 我的书架页面 -->
+      <div id="bookshelf" class="page">
+        <div class="container mx-auto px-4 py-6">
+          <h2 class="text-2xl font-bold mb-6">我的书架</h2>
+          <div class="bg-white rounded-xl shadow-sm p-4">
+            <p class="text-center py-12 text-gray-500">
+              <i class="fa fa-bookmark-o text-5xl mb-3"></i>
+              <br>
+              书架为空，快去添加小说吧！
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 阅读历史页面 -->
+      <div id="history" class="page">
+        <div class="container mx-auto px-4 py-6">
+          <h2 class="text-2xl font-bold mb-6">阅读历史</h2>
+          <div class="bg-white rounded-xl shadow-sm p-4">
+            <p class="text-center py-12 text-gray-500">
+              <i class="fa fa-history text-5xl mb-3"></i>
+              <br>
+              暂无阅读历史
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 下载管理页面 -->
+      <div id="download" class="page">
+        <div class="container mx-auto px-4 py-6">
+          <h2 class="text-2xl font-bold mb-6">下载管理</h2>
+          <div class="bg-white rounded-xl shadow-sm p-4">
+            <p class="text-center py-12 text-gray-500">
+              <i class="fa fa-download text-5xl mb-3"></i>
+              <br>
+              暂无下载任务
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 帮助中心页面 -->
+      <div id="help" class="page">
+        <div class="container mx-auto px-4 py-6">
+          <h2 class="text-2xl font-bold mb-6">帮助中心</h2>
+          <div class="bg-white rounded-xl shadow-sm p-4">
+            <p class="text-center py-12 text-gray-500">
+              <i class="fa fa-question-circle text-5xl mb-3"></i>
+              <br>
+              帮助中心内容正在建设中
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 设置页面 -->
+      <div id="settings" class="page">
+        <div class="container mx-auto px-4 py-6">
+          <h2 class="text-2xl font-bold mb-6">设置</h2>
+          <div class="bg-white rounded-xl shadow-sm p-4">
+            <p class="text-center py-12 text-gray-500">
+              <i class="fa fa-cog text-5xl mb-3"></i>
+              <br>
+              设置功能正在建设中
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- JavaScript -->
+  <script>
+    // DOM加载完成后执行
+    document.addEventListener('DOMContentLoaded', function() {
+      // 页面切换功能
+      function showPage(pageId) {
+        // 隐藏所有页面
+        const pages = document.querySelectorAll('.page');
+        pages.forEach(page => {
+          page.classList.remove('active');
+        });
+        
+        // 显示目标页面
+        const targetPage = document.getElementById(pageId);
+        if (targetPage) {
+          targetPage.classList.add('active');
+        }
+        
+        // 更新导航链接状态
+        const navLinks = document.querySelectorAll('.nav-link, .desktop-nav-link');
+        navLinks.forEach(link => {
+          link.classList.remove('bg-primary/10', 'text-primary', 'font-medium', 'hover:bg-primary/20');
+          link.classList.add('text-sidebar-text', 'hover:bg-sidebar-hover');
+          
+          // 更新桌面端导航
+          if (link.classList.contains('desktop-nav-link')) {
+            link.classList.remove('text-primary');
+            link.classList.add('text-gray-600');
+          }
+        });
+        
+        // 设置当前导航为活动状态
+        const activeLink = document.querySelector(`[href="#${pageId}"]`);
+        if (activeLink) {
+          activeLink.classList.add('bg-primary/10', 'text-primary', 'font-medium', 'hover:bg-primary/20');
+          activeLink.classList.remove('text-sidebar-text', 'hover:bg-sidebar-hover');
+          
+          // 更新桌面端导航
+          if (activeLink.classList.contains('desktop-nav-link')) {
+            activeLink.classList.add('text-primary');
+            activeLink.classList.remove('text-gray-600');
+          }
+        }
+        
+        // 关闭侧边栏（如果是移动端）
+        closeSidebar();
+      }
+      
+      // 侧边栏功能
+      const openSidebarBtn = document.getElementById('openSidebar');
+      const closeSidebarBtn = document.getElementById('closeSidebar');
+      const sidebar = document.getElementById('sidebar');
+      const sidebarOverlay = document.getElementById('sidebarOverlay');
+      
+      function openSidebar() {
+        sidebar.classList.remove('-translate-x-full');
+        sidebarOverlay.classList.remove('opacity-0', 'pointer-events-none');
+      }
+      
+      function closeSidebar() {
+        sidebar.classList.add('-translate-x-full');
+        sidebarOverlay.classList.add('opacity-0', 'pointer-events-none');
+      }
+      
+      openSidebarBtn.addEventListener('click', openSidebar);
+      closeSidebarBtn.addEventListener('click', closeSidebar);
+      sidebarOverlay.addEventListener('click', closeSidebar);
+      
+      // 导航链接点击事件
+      const navLinks = document.querySelectorAll('.nav-link, .desktop-nav-link');
+      navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const pageId = this.getAttribute('href').substring(1);
+          showPage(pageId);
+        });
+      });
+      
+      // 小说卡片点击事件
+      const bookCards = document.querySelectorAll('.card-hover, .book-card');
+      bookCards.forEach(card => {
+        card.addEventListener('click', function() {
+          // 获取当前页面ID
+          const currentPage = document.querySelector('.page.active').id;
+          window.location.href = `novel_detail.html?from=${currentPage}`;
+        });
+      });
+      
+      // 从URL参数加载页面
+      const urlParams = new URLSearchParams(window.location.search);
+      const initialPage = urlParams.get('page');
+      if (initialPage) {
+        showPage(initialPage);
+      }
+    });
+  </script>
+</body>
+</html>
