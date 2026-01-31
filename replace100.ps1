@@ -1,0 +1,1 @@
+(Get-Content "index.html" -Raw) -replace 'https://picsum.photos/100/140\?random=\d+', 'images/novel-cover-small.svg' | Set-Content "index.html" -NoNewline

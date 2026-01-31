@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400">
+  <rect width="1200" height="400" fill="#8b5cf6"/>
+  <text x="600" y="200" text-anchor="middle" dy=".3em" font-size="48" fill="white" font-family="Arial">科幻小说精选</text>
+  <text x="600" y="250" text-anchor="middle" dy=".3em" font-size="24" fill="rgba(255,255,255,0.8)" font-family="Arial">畅想未来科技与宇宙奥秘</text>
+</svg>
