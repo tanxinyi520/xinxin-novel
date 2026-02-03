@@ -15,15 +15,14 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
-      preload: path.join(__dirname, 'preload.js'),
-      devTools: true // 确保开发者工具可用
+      preload: path.join(__dirname, 'preload.js')
     },
     icon: path.join(__dirname, 'assets', 'icon.ico')
   });
 
-  // 加载应用的index.html
+  // 加载应用的欣欣小说-修复版.html
   mainWindow.loadURL(url.format({
-    pathname: path.join(__dirname, 'index.html'),
+    pathname: path.join(__dirname, '..', '欣欣小说-修复版.html'),
     protocol: 'file:',
     slashes: true
   }));
@@ -36,9 +35,6 @@ function createWindow() {
       // 不阻止导航，允许跳转到其他HTML文件
     }
   });
-
-  // 注释掉自动打开开发者工具的代码，改为通过用户界面控制
-  // mainWindow.webContents.openDevTools();
 
   // 创建应用菜单
   const menuTemplate = [
