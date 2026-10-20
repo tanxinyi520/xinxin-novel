@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小说阅读器</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#6366f1',
+            secondary: '#ec4899',
+            accent: '#8b5cf6',
+            dark: {
+              bg: '#121212',
+              card: '#1e1e1e',
+              text: '#e0e0e0',
+              border: '#333333'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Microsoft YaHei', sans-serif;
+    }
+    
+    .prose p {
+      text-indent: 2em;
+      line-height: 1.8;
+    }
+    
+    .transition-transform {
+      transition: transform 0.3s ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-white dark:bg-dark-bg">
+  <div id="reader" class="relative min-h-screen bg-white dark:bg-dark-bg">
+    <!-- 阅读器内容区 -->
+    <div id="readerContent" class="h-screen px-4 md:px-8 lg:px-16 max-w-3xl mx-auto flex flex-col justify-center overflow-y-auto">
+      <h2 id="chapterTitle" class="text-2xl font-bold text-center mb-6 text-gray-800 dark:text-dark-text">第一章 开始</h2>
+      <div id="chapterContent" class="prose dark:prose-invert max-w-none">
+        <p class="text-gray-800 dark:text-dark-text leading-relaxed mb-4">
+          这是小说的第一章内容。在这个世界里，有着许多奇妙的故事等待着我们去探索。故事的主人公是一个普通的年轻人，他有着不平凡的命运。
+        </p>
+        <p class="text-gray-800 dark:text-dark-text leading-relaxed mb-4">
+          一天，他发现了一个神秘的宝藏，从此他的生活发生了翻天覆地的变化。他开始了一段充满冒险和挑战的旅程，在这个过程中，他遇到了许多志同道合的朋友，也遇到了许多强大的敌人。
+        </p>
+        <p class="text-gray-800 dark:text-dark-text leading-relaxed mb-4">
+          随着故事的发展，主人公逐渐成长为一个强大的战士，他不仅要面对外部的敌人，还要面对自己内心的挣扎和困惑。在这个过程中，他学会了如何面对困难，如何坚持自己的信念，如何成为一个真正的英雄。
+        </p>
+        <p class="text-gray-800 dark:text-dark-text leading-relaxed mb-4">
+          这是一个关于成长、友谊、爱情和勇气的故事，它将带领读者进入一个充满想象和奇迹的世界。
+        </p>
+      </div>
+    </div>
+    
+    <!-- 阅读器菜单 -->
+    <div id="readerMenu" class="fixed inset-0 bg-black/50 z-20 hidden">
+      <!-- 顶部标题栏 -->
+      <div class="fixed top-0 left-0 right-0 bg-white dark:bg-dark-card border-b border-gray-200 dark:border-dark-border z-30 p-4 flex justify-between items-center">
+        <button id="readerBack" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-dark-border transition-colors mr-4">
+          <i class="fa fa-arrow-left text-gray-700 dark:text-dark-text"></i>
+        </button>
+        <h3 id="readerTitle" class="text-lg font-medium text-gray-800 dark:text-dark-text">小说标题</h3>
+        <div class="flex items-center gap-3">
+          <button id="readerDownload" class="flex items-center text-gray-600 dark:text-dark-text hover:text-primary transition-colors">
+            <i class="fa fa-download"></i>
+          </button>
+          <button id="readerSource" class="flex items-center text-gray-600 dark:text-dark-text hover:text-primary transition-colors">
+            <i class="fa fa-refresh"></i>
+          </button>
+          <button id="readerAddToBookshelf" class="flex items-center text-gray-600 dark:text-dark-text hover:text-primary transition-colors">
+            <i class="fa fa-bookmark-o"></i>
+          </button>
+          <button id="readerCloseMenu" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-dark-border transition-colors ml-2">
+            <i class="fa fa-times text-gray-700 dark:text-dark-text"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 底部菜单栏 -->
+      <div class="fixed bottom-0 left-0 right-0 bg-white dark:bg-dark-card border-t border-gray-200 dark:border-dark-border z-30 p-4">
+        <!-- 章节导航 -->
+        <div class="flex items-center justify-between mb-4">
+          <button id="prevChapter" class="px-4 py-2 rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+            <i class="fa fa-chevron-left mr-1"></i> 上一章
+          </button>
+          <div class="flex-1 mx-4">
+            <input type="range" id="readerChapterSlider" min="1" max="5" value="1" class="w-full">
+          </div>
+          <button id="nextChapter" class="px-4 py-2 rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+            下一章 <i class="fa fa-chevron-right ml-1"></i>
+          </button>
+        </div>
+        
+        <!-- 功能按钮 -->
+        <div class="grid grid-cols-4 gap-4">
+          <div class="flex flex-col items-center">
+            <button id="readerChapterList" class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary hover:bg-primary/20 transition-colors mb-2">
+              <i class="fa fa-list text-lg"></i>
+            </button>
+            <span class="text-xs text-gray-600 dark:text-dark-text">目录</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <button id="readerReadAloud" class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary hover:bg-primary/20 transition-colors mb-2">
+              <i class="fa fa-volume-up text-lg"></i>
+            </button>
+            <span class="text-xs text-gray-600 dark:text-dark-text">朗读</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <button id="readerFont" class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary hover:bg-primary/20 transition-colors mb-2">
+              <i class="fa fa-text-height text-lg"></i>
+            </button>
+            <span class="text-xs text-gray-600 dark:text-dark-text">字体</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <button id="readerSettings" class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary hover:bg-primary/20 transition-colors mb-2">
+              <i class="fa fa-cog text-lg"></i>
+            </button>
+            <span class="text-xs text-gray-600 dark:text-dark-text">设置</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 章节列表侧边栏 -->
+    <div id="chapterSidebar" class="fixed top-0 right-0 h-full w-80 bg-white dark:bg-dark-card border-l border-gray-200 dark:border-dark-border z-20 transform translate-x-full transition-transform duration-300 ease-in-out">
+      <div class="p-4 border-b border-gray-200 dark:border-dark-border flex justify-between items-center">
+        <h3 class="text-lg font-medium text-gray-800 dark:text-dark-text">章节列表</h3>
+        <button id="closeChapterSidebar" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-dark-border transition-colors">
+          <i class="fa fa-times text-gray-700 dark:text-dark-text"></i>
+        </button>
+      </div>
+      <div id="chapterSidebarList" class="overflow-y-auto h-[calc(100%-64px)] p-4 space-y-2">
+        <!-- 章节列表会在这里动态生成 -->
+      </div>
+    </div>
+    
+    <!-- 遮罩层 -->
+    <div id="readerOverlay" class="fixed inset-0 bg-black/50 z-10 hidden"></div>
+    
+    <!-- 阅读设置面板（底部弹出式） -->
+    <div id="readSettingsPanel" class="fixed bottom-0 left-0 right-0 bg-white dark:bg-dark-card border-t border-gray-200 dark:border-dark-border z-40 transform transition-transform duration-300 translate-y-full">
+      <!-- 字体大小调节 -->
+      <div class="p-4 border-b border-gray-200 dark:border-dark-border">
+        <div class="flex items-center justify-center gap-4">
+          <button id="decreaseFont" class="w-12 h-12 rounded-full bg-gray-200 dark:bg-dark-border hover:bg-primary/20 transition-colors flex items-center justify-center">
+            <span class="text-xl font-bold">A-</span>
+          </button>
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-gray-500">小</span>
+            <div class="w-32">
+              <input type="range" id="fontSizeSlider" min="14" max="28" value="16" class="w-full">
+            </div>
+            <span id="fontSizeDisplay" class="text-lg font-medium w-12 text-center">16</span>
+            <div class="w-32">
+              <input type="range" id="fontSizeSlider2" min="14" max="28" value="16" class="w-full">
+            </div>
+            <span class="text-sm text-gray-500">大</span>
+          </div>
+          <button id="increaseFont" class="w-12 h-12 rounded-full bg-gray-200 dark:bg-dark-border hover:bg-primary/20 transition-colors flex items-center justify-center">
+            <span class="text-xl font-bold">A+</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 字体和加粗 -->
+      <div class="p-4 border-b border-gray-200 dark:border-dark-border">
+        <div class="flex items-center gap-4">
+          <button id="fontBold" class="flex-1 py-2 px-4 border rounded-lg hover:bg-primary/10 transition-colors font-bold">
+            <i class="fa fa-bold mr-2"></i>加粗
+          </button>
+          <button id="fontFamilyBtn" class="flex-1 py-2 px-4 border rounded-lg hover:bg-primary/10 transition-colors">
+            <i class="fa fa-font mr-2"></i>字体
+          </button>
+          <button id="chineseConverter" class="flex-1 py-2 px-4 border rounded-lg hover:bg-primary/10 transition-colors">
+            <i class="fa fa-language mr-2"></i>简繁
+          </button>
+        </div>
+      </div>
+      
+      <!-- 翻页动画 -->
+      <div class="p-4 border-b border-gray-200 dark:border-dark-border">
+        <h4 class="text-sm text-gray-600 dark:text-dark-text mb-3">翻页动画</h4>
+        <div class="grid grid-cols-5 gap-2">
+          <button class="page-anim-option py-2 px-2 border rounded-lg hover:bg-primary/10 transition-colors text-xs" data-anim="cover">
+            <i class="fa fa-book block mb-1"></i>覆盖
+          </button>
+          <button class="page-anim-option py-2 px-2 border rounded-lg hover:bg-primary/10 transition-colors text-xs" data-anim="slide">
+            <i class="fa fa-arrows-h block mb-1"></i>滑动
+          </button>
+          <button class="page-anim-option py-2 px-2 border rounded-lg hover:bg-primary/10 transition-colors text-xs" data-anim="simulation">
+            <i class="fa fa-sync block mb-1"></i>仿真
+          </button>
+          <button class="page-anim-option py-2 px-2 border rounded-lg hover:bg-primary/10 transition-colors text-xs" data-anim="scroll">
+            <i class="fa fa-ellipsis-v block mb-1"></i>滚动
+          </button>
+          <button class="page-anim-option py-2 px-2 border rounded-lg hover:bg-primary/10 transition-colors text-xs" data-anim="none">
+            <i class="fa fa-ban block mb-1"></i>无
+          </button>
+        </div>
+      </div>
+      
+      <!-- 阅读主题 -->
+      <div class="p-4">
+        <h4 class="text-sm text-gray-600 dark:text-dark-text mb-3">阅读主题</h4>
+        <div class="grid grid-cols-5 gap-2">
+          <button class="theme-option py-3 border-2 rounded-lg transition-colors" data-theme="light" style="background:#ffffff;color:#000000;border-color:#ddd">
+            <i class="fa fa-sun-o block mb-1"></i>
+            <span class="text-xs">明亮</span>
+          </button>
+          <button class="theme-option py-3 border-2 rounded-lg transition-colors" data-theme="sepia" style="background:#f4ecd8;color:#5b4636;border-color:#d4c4a8">
+            <i class="fa fa-book block mb-1"></i>
+            <span class="text-xs">羊皮</span>
+          </button>
+          <button class="theme-option py-3 border-2 rounded-lg transition-colors" data-theme="green" style="background:#c9e4ca;color:#2d5a3d;border-color:#a8d5ba">
+            <i class="fa fa-leaf block mb-1"></i>
+            <span class="text-xs">绿色</span>
+          </button>
+          <button class="theme-option py-3 border-2 rounded-lg transition-colors" data-theme="blue" style="background:#dde6f0;color:#2c3e50;border-color:#b8c5d8">
+            <i class="fa fa-tint block mb-1"></i>
+            <span class="text-xs">蓝色</span>
+          </button>
+          <button class="theme-option py-3 border-2 rounded-lg transition-colors" data-theme="dark" style="background:#1e1e1e;color:#e0e0e0;border-color:#333">
+            <i class="fa fa-moon-o block mb-1"></i>
+            <span class="text-xs">夜间</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 字体选择弹窗 -->
+    <div id="fontFamilyPanel" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-dark-card rounded-lg shadow-lg p-6 z-50 hidden w-80">
+      <div class="flex justify-between items-center mb-4">
+        <h4 class="text-lg font-medium text-gray-800 dark:text-dark-text">选择字体</h4>
+        <button id="closeFontFamily" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-dark-border">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <button class="font-family-option p-3 border rounded-lg hover:bg-primary/10 text-left" data-font="Microsoft YaHei">
+          <div class="font-medium" style="font-family: Microsoft YaHei">微软雅黑</div>
+        </button>
+        <button class="font-family-option p-3 border rounded-lg hover:bg-primary/10 text-left" data-font="SimSun">
+          <div class="font-medium" style="font-family: SimSun">宋体</div>
+        </button>
+        <button class="font-family-option p-3 border rounded-lg hover:bg-primary/10 text-left" data-font="KaiTi">
+          <div class="font-medium" style="font-family: KaiTi">楷体</div>
+        </button>
+        <button class="font-family-option p-3 border rounded-lg hover:bg-primary/10 text-left" data-font="HeiTi">
+          <div class="font-medium" style="font-family: HeiTi">黑体</div>
+        </button>
+      </div>
+    </div>
+    
+    <!-- 换源面板 -->
+    <div id="sourcePanel" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-dark-card rounded-lg shadow-lg p-6 z-40 hidden w-96">
+      <div class="flex justify-between items-center mb-4">
+        <h4 class="text-lg font-medium text-gray-800 dark:text-dark-text">选择书源</h4>
+        <button id="closeSourcePanel" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-dark-border">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div id="sourceList" class="space-y-2">
+        <button class="source-option w-full p-3 border rounded-lg hover:bg-primary/10 text-left" data-source="1">
+          <div class="font-medium">书源 1（极速）</div>
+          <div class="text-sm text-gray-500">更新快，质量高</div>
+        </button>
+        <button class="source-option w-full p-3 border rounded-lg hover:bg-primary/10 text-left" data-source="2">
+          <div class="font-medium">书源 2（备用）</div>
+          <div class="text-sm text-gray-500">内容完整</div>
+        </button>
+        <button class="source-option w-full p-3 border rounded-lg hover:bg-primary/10 text-left" data-source="3">
+          <div class="font-medium">书源 3（本地）</div>
+          <div class="text-sm text-gray-500">离线阅读</div>
+        </button>
+      </div>
+    </div>
+    
+    <!-- 下载管理面板 -->
+    <div id="downloadPanel" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-dark-card rounded-lg shadow-lg p-6 z-40 hidden w-96">
+      <div class="flex justify-between items-center mb-4">
+        <h4 class="text-lg font-medium text-gray-800 dark:text-dark-text">下载管理</h4>
+        <button id="closeDownloadPanel" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-dark-border">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div class="mb-4">
+        <button id="downloadCurrentChapter" class="w-full py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
+          <i class="fa fa-download mr-2"></i>下载当前章节
+        </button>
+      </div>
+      <div class="mb-4">
+        <button id="downloadAllChapters" class="w-full py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
+          <i class="fa fa-download mr-2"></i>下载全部章节
+        </button>
+      </div>
+      <div>
+        <h5 class="text-sm font-medium mb-2">已下载章节</h5>
+        <div id="downloadedList" class="max-h-48 overflow-y-auto space-y-1"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 当前阅读的小说和章节
+    let currentNovelId = '1';
+    let currentChapterIndex = 0;
+    let currentNovel = null;
+    
+    // 阅读设置
+    let readingSettings = {
+      fontSize: 16,
+      fontFamily: 'Microsoft YaHei',
+      theme: 'light',
+      isBold: false,
+      pageAnim: 'slide',
+      chineseConvert: 'simplified' // simplified, traditional
+    };
+    
+    // 下载管理
+    let downloadedChapters = new Set();
+    let isDownloading = false;
+    
+    // 书架管理
+    let bookshelf = JSON.parse(localStorage.getItem('bookshelf') || '[]');
+    
+    // 书源配置
+    const sources = {
+      '1': { name: '书源 1（极速）', desc: '更新快，质量高' },
+      '2': { name: '书源 2（备用）', desc: '内容完整' },
+      '3': { name: '书源 3（本地）', desc: '离线阅读' }
+    };
+    let currentSource = '1';
+    
+    // 小说数据
+    const novels = {
+      '1': {
+        title: '星辰变',
+        chapters: [
+          { id: '1', title: '第1章 序章', content: '一名孩童，天生无法修炼内功。为了得到父亲的重视关注，他毅然选择了修炼痛苦艰难的外功。春去秋来，时光如梭，这个孩童长大了。他的名字叫秦羽，是镇东王秦德的第三个儿子。秦德是大楚王朝的镇东王，手握重兵，权倾一方。秦羽的两个哥哥秦云和秦霜都是修炼内功的天才，而秦羽却天生无法修炼内功，这让他在家族中备受冷落。\n\n为了证明自己，秦羽开始修炼外功。外功的修炼非常痛苦，需要不断地锻炼肉体，提高力量和速度。秦羽每天都要进行高强度的训练，不管刮风下雨，从不间断。他的努力终于得到了回报，他的外功修为逐渐提升，甚至超过了许多修炼内功的人。\n\n在一次家族测试中，秦羽的表现让所有人都大吃一惊。他的力量和速度已经达到了一个惊人的水平，就连他的父亲秦德也对他刮目相看。从那以后，秦羽在家族中的地位逐渐提高，不再受到冷落。\n\n然而，秦羽并不满足于此。他知道，外功的修炼是有极限的，而内功的修炼则没有尽头。他一直在寻找能够修炼内功的方法，希望能够突破自己的极限。\n\n一天，秦羽在修炼时遇到了一位神秘的老人。老人告诉他，他之所以无法修炼内功，是因为他的体质特殊，需要特殊的方法才能修炼。老人给了他一本功法，并告诉他如何修炼。\n\n秦羽按照老人的方法开始修炼，果然，他的体内开始产生内力。这让他非常兴奋，他终于可以修炼内功了。\n\n随着秦羽的修为不断提升，他开始接触到更多的修炼者和修炼资源。他的眼界逐渐开阔，知道了这个世界上还有许多强大的修炼者和势力。\n\n为了追求更高的修为，秦羽决定离开家族，踏上修行之路。这是他人生的一个重要转折点，也是他成为强者的开始。' },
+          { id: '2', title: '第2章 修炼开始', content: '修炼外功的痛苦是常人难以想象的，但这个孩童却坚持了下来。他的努力终于得到了回报，他的外功修为逐渐提升。秦羽每天都要进行高强度的训练，包括举重、跑步、跳跃等。他的身体变得越来越强壮，力量和速度也越来越快。\n\n在修炼外功的同时，秦羽也开始学习各种战斗技巧。他从家族的侍卫那里学习了刀法、剑法和拳法，不断地提高自己的战斗能力。\n\n秦羽的努力没有白费，他的外功修为进步很快。在家族的年度测试中，他的表现超过了许多修炼内功的同龄人，甚至比一些成年人还要强。\n\n秦德看到秦羽的进步，非常高兴。他开始重视这个儿子，给他提供更好的修炼资源和指导。秦羽也没有辜负父亲的期望，他的修为不断提高，成为了家族中的佼佼者。\n\n然而，秦羽并不满足于此。他知道，外功的修炼是有极限的，而内功的修炼则没有尽头。他一直在寻找能够修炼内功的方法，希望能够突破自己的极限。\n\n一天，秦羽在修炼时遇到了一位神秘的老人。老人告诉他，他之所以无法修炼内功，是因为他的体质特殊，需要特殊的方法才能修炼。老人给了他一本功法，并告诉他如何修炼。\n\n秦羽按照老人的方法开始修炼，果然，他的体内开始产生内力。这让他非常兴奋，他终于可以修炼内功了。\n\n随着秦羽的修为不断提升，他开始接触到更多的修炼者和修炼资源。他的眼界逐渐开阔，知道了这个世界上还有许多强大的修炼者和势力。' },
+          { id: '3', title: '第3章 第一次战斗', content: '在一次意外中，他遇到了一只野兽，这是他第一次真正的战斗。凭借着坚韧的意志和刻苦的训练，他成功击败了野兽。\n\n那天，秦羽在山林中修炼，突然听到了一声野兽的咆哮。他顺着声音望去，看到一只巨大的老虎正向他扑来。这只老虎比普通的老虎大得多，身上的毛发呈金黄色，看起来非常凶猛。\n\n秦羽没有惊慌，他冷静地拔出腰间的佩刀，准备与老虎战斗。老虎扑了过来，秦羽侧身躲开，然后挥刀砍向老虎的腹部。老虎吃痛，更加凶猛地攻击秦羽。\n\n秦羽与老虎展开了激烈的战斗。他利用自己的速度和力量，不断地攻击老虎的弱点。经过一番苦战，秦羽终于将老虎击败。他的身上也受了一些伤，但他并不在意，因为这是他第一次真正的战斗，也是他证明自己的机会。\n\n这次战斗让秦羽明白了一个道理：在修炼的道路上，只有不断地战斗，才能提高自己的实力。他决定更加努力地修炼，以便在未来的战斗中取得胜利。\n\n回到家族后，秦羽向父亲讲述了这次战斗的经历。秦德听了非常高兴，他为自己有这样一个勇敢的儿子而感到骄傲。他给了秦羽更多的修炼资源，希望他能够成为一名强大的修炼者。\n\n秦羽也没有辜负父亲的期望，他的修为不断提高，成为了家族中的佼佼者。' },
+          { id: '4', title: '第4章 家族测试', content: '家族测试的日子到了，这个孩童终于有机会展示自己的实力。他的表现让所有人都大吃一惊。\n\n家族测试是家族中一年一度的重要事件，所有的年轻弟子都会参加，展示自己的修炼成果。测试分为外功测试和内功测试两部分。\n\n秦羽参加了外功测试，他的表现非常出色。他的力量、速度和耐力都达到了一个惊人的水平，超过了许多修炼内功的弟子。\n\n在内功测试中，秦羽也表现得非常出色。他的内力虽然不如一些修炼多年的弟子，但也达到了一个不错的水平。\n\n测试结束后，秦羽的成绩排在了家族年轻弟子的前列，这让所有人都大吃一惊。他们没有想到，一个曾经无法修炼内功的孩子，现在竟然成为了家族中的佼佼者。\n\n秦德看到秦羽的表现，非常高兴。他宣布，秦羽将成为家族的重点培养对象，享受最好的修炼资源和指导。\n\n从那以后，秦羽在家族中的地位逐渐提高，不再受到冷落。他的两个哥哥也对他刮目相看，开始与他亲近。\n\n秦羽并没有因此而骄傲自满，他知道，这只是他修炼道路上的一个起点，他还有很长的路要走。' },
+          { id: '5', title: '第5章 离家修行', content: '为了追求更高的修为，他决定离开家族，踏上修行之路。这是他人生的一个重要转折点。\n\n秦羽知道，家族中的修炼资源虽然丰富，但对于他来说已经不够了。他需要更广阔的天地，更强大的对手，才能不断地提高自己的实力。\n\n在与父亲商量后，秦羽决定离开家族，踏上修行之路。他的父亲虽然不舍，但也理解他的决定，支持他去追求更高的修为。\n\n秦羽收拾好行李，告别了家人，开始了他的修行之旅。他首先来到了附近的一座城市，希望能够在这里找到更多的修炼资源和机会。\n\n在城市中，秦羽遇到了许多不同的修炼者，他们来自不同的地方，有着不同的修炼方式和理念。秦羽从他们身上学到了许多东西，开阔了自己的眼界。\n\n随着时间的推移，秦羽的修为不断提高，他的名字也逐渐在修炼界传开。他成为了一名小有名气的修炼者，受到了许多人的尊敬和关注。\n\n然而，秦羽并不满足于此。他知道，这个世界上还有许多强大的修炼者和势力，他需要不断地挑战自己，才能成为真正的强者。\n\n秦羽的修行之路还很长，他不知道前方会遇到什么挑战和机遇，但他相信，只要他不断地努力，就一定能够成为一名强大的修炼者。' }
+        ]
+      },
+      '2': {
+        title: '斗破苍穹',
+        chapters: [
+          { id: '1', title: '第1章 陨落的天才', content: '这里是天才云集的世界，这里是斗气的世界。萧炎，主人公，萧家历史上空前绝后的斗气修炼天才。他在四岁时就开始修炼斗气，六岁时就突破了斗者境界，八岁时突破斗师境界，十岁时突破大斗师境界，十二岁时突破斗灵境界，成为了萧家历史上最年轻的斗灵强者。\n\n然而，就在他即将突破斗王境界的时候，他的斗气突然消失了。从此，他从天才变成了废物。他的修为不断下降，从斗灵境界降到了斗师境界，再降到了斗者境界，最后甚至连斗者境界都保不住了。\n\n萧炎的生活从此发生了翻天覆地的变化。他从家族的宠儿变成了家族的弃儿，受到了许多人的冷落和嘲笑。他的未婚妻纳兰嫣然也因此退婚，让他颜面扫地。\n\n萧炎并没有因此而放弃，他依然每天努力地修炼，希望能够恢复自己的斗气。然而，无论他怎么努力，他的斗气都没有恢复的迹象。\n\n就在萧炎最绝望的时候，一个神秘的老人出现在他的面前。这个老人自称药老，是一位强大的炼药师。他告诉萧炎，他的斗气并没有消失，而是被一种特殊的封印封印住了。\n\n药老给了萧炎一本功法，并告诉他如何修炼。萧炎按照药老的方法开始修炼，果然，他的斗气开始逐渐恢复。\n\n随着萧炎的斗气逐渐恢复，他的修为也开始不断提高。他重新成为了家族中的佼佼者，甚至比以前更加强大。' },
+          { id: '2', title: '第2章 废物的三年', content: '然而，就在他即将突破斗者境界的时候，他的斗气突然消失了。从此，他从天才变成了废物。萧炎的生活从此发生了翻天覆地的变化。他从家族的宠儿变成了家族的弃儿，受到了许多人的冷落和嘲笑。\n\n在这三年里，萧炎承受了巨大的压力和痛苦。他每天都要面对别人的嘲笑和白眼，甚至连自己的家人都对他失去了信心。\n\n然而，萧炎并没有因此而放弃。他依然每天努力地修炼，希望能够恢复自己的斗气。他知道，只有通过自己的努力，才能重新证明自己。\n\n在这三年里，萧炎也开始学习炼药术。他希望通过炼药术来提高自己的实力，同时也为自己的未来做打算。\n\n虽然萧炎的斗气没有恢复，但他的炼药术却取得了很大的进步。他成为了一名初级炼药师，能够炼制一些简单的丹药。\n\n就在萧炎最绝望的时候，一个神秘的老人出现在他的面前。这个老人自称药老，是一位强大的炼药师。他告诉萧炎，他的斗气并没有消失，而是被一种特殊的封印封印住了。\n\n药老给了萧炎一本功法，并告诉他如何修炼。萧炎按照药老的方法开始修炼，果然，他的斗气开始逐渐恢复。' },
+          { id: '3', title: '第3章 药老的出现', content: '在他最绝望的时候，一个神秘的老人出现在他的面前。这个老人自称药老，是一位强大的炼药师。他告诉萧炎，他的斗气并没有消失，而是被一种特殊的封印封印住了。\n\n药老告诉萧炎，他是一名灵魂体，因为受到了重伤，所以需要依附在萧炎的身上。他可以帮助萧炎恢复斗气，并教他炼药术和斗技。\n\n萧炎非常高兴，他终于看到了希望。他按照药老的方法开始修炼，果然，他的斗气开始逐渐恢复。\n\n药老不仅帮助萧炎恢复了斗气，还教他炼药术和斗技。萧炎的实力不断提高，他的名字也逐渐在修炼界传开。\n\n随着萧炎的实力不断提高，他开始挑战一些强大的对手，证明自己的实力。他的表现让所有人都大吃一惊，他们没有想到，一个曾经的废物，现在竟然成为了一名强大的修炼者。\n\n萧炎并没有因此而骄傲自满，他知道，这只是他修炼道路上的一个起点，他还有很长的路要走。' },
+          { id: '4', title: '第4章 修炼斗技', content: '在药老的指导下，萧炎开始修炼斗技。他的实力逐渐恢复，甚至比以前更加强大。\n\n药老给了萧炎一些强大的斗技，包括焰分噬浪尺、八极崩、佛怒火莲等。这些斗技都是非常强大的，能够帮助萧炎在战斗中取得胜利。\n\n萧炎每天都在努力地修炼这些斗技，他的实力不断提高。他的斗技越来越熟练，威力也越来越大。\n\n在一次与魔兽的战斗中，萧炎使用焰分噬浪尺，一举击败了一只强大的魔兽。这让他非常高兴，他知道，自己的实力已经有了很大的提高。\n\n随着萧炎的实力不断提高，他开始挑战一些强大的修炼者。他的表现让所有人都大吃一惊，他们没有想到，一个曾经的废物，现在竟然成为了一名强大的修炼者。\n\n萧炎并没有因此而骄傲自满，他知道，这只是他修炼道路上的一个起点，他还有很长的路要走。' },
+          { id: '5', title: '第5章 复仇之战', content: '萧炎终于有机会向曾经羞辱过他的人复仇。这是他证明自己的时刻。\n\n纳兰嫣然是萧炎的未婚妻，她在萧炎成为废物后，选择了退婚。这让萧炎颜面扫地，成为了家族中的笑柄。\n\n现在，萧炎的实力已经恢复，甚至比以前更加强大。他决定向纳兰嫣然复仇，证明自己的实力。\n\n萧炎来到了纳兰家族，向纳兰嫣然挑战。纳兰嫣然接受了挑战，她认为萧炎还是以前的那个废物，根本不是她的对手。\n\n然而，战斗开始后，纳兰嫣然才发现，萧炎已经不是以前的那个废物了。他的实力非常强大，甚至比她还要强。\n\n经过一番激烈的战斗，萧炎最终击败了纳兰嫣然。他证明了自己的实力，也洗刷了自己的耻辱。\n\n从那以后，萧炎的名字在修炼界传开，成为了一名小有名气的修炼者。他的故事激励着许多人，让他们相信，只要努力，就一定能够取得成功。' }
+        ]
+      }
+    };
+    
+    // 初始化阅读器
+    function initReader() {
+      currentNovel = novels[currentNovelId];
+      renderChapterList();
+      loadChapter(currentChapterIndex);
+      updateSliderMax();
+      
+      // 阅读器返回按钮
+      document.getElementById('readerBack').addEventListener('click', function() {
+        alert('返回上一页');
+      });
+      
+      // 章节列表按钮
+      document.getElementById('readerChapterList').addEventListener('click', function() {
+        const chapterSidebar = document.getElementById('chapterSidebar');
+        const readerOverlay = document.getElementById('readerOverlay');
+        chapterSidebar.classList.remove('translate-x-full');
+        readerOverlay.classList.remove('hidden');
+      });
+      
+      // 关闭章节列表侧边栏
+      document.getElementById('closeChapterSidebar').addEventListener('click', function() {
+        const chapterSidebar = document.getElementById('chapterSidebar');
+        const readerOverlay = document.getElementById('readerOverlay');
+        chapterSidebar.classList.add('translate-x-full');
+        readerOverlay.classList.add('hidden');
+      });
+      
+      // 遮罩层点击关闭章节列表
+      document.getElementById('readerOverlay').addEventListener('click', function() {
+        const chapterSidebar = document.getElementById('chapterSidebar');
+        chapterSidebar.classList.add('translate-x-full');
+        this.classList.add('hidden');
+        // 同时关闭其他面板
+        document.getElementById('readSettingsPanel').classList.add('translate-y-full');
+        document.getElementById('fontFamilyPanel').classList.add('hidden');
+        document.getElementById('sourcePanel').classList.add('hidden');
+        document.getElementById('downloadPanel').classList.add('hidden');
+      });
+      
+      // 上一章按钮
+      document.getElementById('prevChapter').addEventListener('click', function() {
+        goToPrevChapter();
+      });
+      
+      // 下一章按钮
+      document.getElementById('nextChapter').addEventListener('click', function() {
+        goToNextChapter();
+      });
+      
+      // 章节滑块
+      document.getElementById('readerChapterSlider').addEventListener('input', function() {
+        goToChapter(parseInt(this.value) - 1);
+      });
+      
+      // 下载按钮
+      document.getElementById('readerDownload').addEventListener('click', function() {
+        toggleDownloadPanel();
+      });
+      
+      // 关闭下载面板
+      document.getElementById('closeDownloadPanel').addEventListener('click', function() {
+        document.getElementById('downloadPanel').classList.add('hidden');
+      });
+      
+      // 下载当前章节
+      document.getElementById('downloadCurrentChapter').addEventListener('click', function() {
+        downloadChapter(currentChapterIndex);
+      });
+      
+      // 下载全部章节
+      document.getElementById('downloadAllChapters').addEventListener('click', function() {
+        downloadAllChapters();
+      });
+      
+      // 换源按钮
+      document.getElementById('readerSource').addEventListener('click', function() {
+        document.getElementById('sourcePanel').classList.remove('hidden');
+      });
+      
+      // 关闭换源面板
+      document.getElementById('closeSourcePanel').addEventListener('click', function() {
+        document.getElementById('sourcePanel').classList.add('hidden');
+      });
+      
+      // 书源选择
+      document.querySelectorAll('.source-option').forEach(btn => {
+        btn.addEventListener('click', function() {
+          currentSource = this.dataset.source;
+          alert(`已切换到${sources[currentSource].name}`);
+          document.getElementById('sourcePanel').classList.add('hidden');
+        });
+      });
+      
+      // 加入书架按钮
+      document.getElementById('readerAddToBookshelf').addEventListener('click', function() {
+        addToBookshelf();
+      });
+      
+      // 阅读器内容区点击事件
+      document.getElementById('readerContent').addEventListener('click', function(e) {
+        const contentRect = this.getBoundingClientRect();
+        const clickX = e.clientX - contentRect.left;
+        
+        if (clickX < contentRect.width / 3) {
+          goToPrevChapter();
+        } else if (clickX > contentRect.width * 2 / 3) {
+          goToNextChapter();
+        } else {
+          const readerMenu = document.getElementById('readerMenu');
+          readerMenu.classList.toggle('hidden');
+        }
+      });
+      
+      // 关闭菜单按钮
+      document.getElementById('readerCloseMenu').addEventListener('click', function() {
+        document.getElementById('readerMenu').classList.add('hidden');
+      });
+      
+      // 菜单遮罩层点击关闭菜单
+      document.getElementById('readerMenu').addEventListener('click', function(e) {
+        if (e.target === this) {
+          this.classList.add('hidden');
+          // 同时关闭其他面板
+          document.getElementById('readSettingsPanel').classList.add('translate-y-full');
+          document.getElementById('fontFamilyPanel').classList.add('hidden');
+          document.getElementById('sourcePanel').classList.add('hidden');
+          document.getElementById('downloadPanel').classList.add('hidden');
+        }
+      });
+      
+      // 朗读按钮
+      document.getElementById('readerReadAloud').addEventListener('click', function() {
+        alert('朗读功能已启动');
+      });
+      
+      // 字体按钮 - 打开底部设置面板
+      document.getElementById('readerFont').addEventListener('click', function() {
+        toggleReadSettings();
+      });
+      
+      // 关闭阅读设置面板
+      document.getElementById('closeFontFamily').addEventListener('click', function() {
+        document.getElementById('fontFamilyPanel').classList.add('hidden');
+      });
+      
+      // 字体大小滑块
+      document.getElementById('fontSizeSlider').addEventListener('input', function() {
+        readingSettings.fontSize = parseInt(this.value);
+        document.getElementById('fontSizeSlider2').value = this.value;
+        updateFontSize();
+      });
+      
+      document.getElementById('fontSizeSlider2').addEventListener('input', function() {
+        readingSettings.fontSize = parseInt(this.value);
+        document.getElementById('fontSizeSlider').value = this.value;
+        updateFontSize();
+      });
+      
+      // 字体大小按钮
+      document.getElementById('increaseFont').addEventListener('click', function() {
+        if (readingSettings.fontSize < 28) {
+          readingSettings.fontSize += 2;
+          document.getElementById('fontSizeSlider').value = readingSettings.fontSize;
+          document.getElementById('fontSizeSlider2').value = readingSettings.fontSize;
+          updateFontSize();
+        }
+      });
+      
+      document.getElementById('decreaseFont').addEventListener('click', function() {
+        if (readingSettings.fontSize > 14) {
+          readingSettings.fontSize -= 2;
+          document.getElementById('fontSizeSlider').value = readingSettings.fontSize;
+          document.getElementById('fontSizeSlider2').value = readingSettings.fontSize;
+          updateFontSize();
+        }
+      });
+      
+      // 字体加粗
+      document.getElementById('fontBold').addEventListener('click', function() {
+        readingSettings.isBold = !readingSettings.isBold;
+        updateFontWeight();
+        this.classList.toggle('bg-primary/10', readingSettings.isBold);
+        this.classList.toggle('text-primary', readingSettings.isBold);
+      });
+      
+      // 字体选择
+      document.getElementById('fontFamilyBtn').addEventListener('click', function() {
+        document.getElementById('fontFamilyPanel').classList.remove('hidden');
+      });
+      
+      // 字体类型选择
+      document.querySelectorAll('.font-family-option').forEach(btn => {
+        btn.addEventListener('click', function() {
+          readingSettings.fontFamily = this.dataset.font;
+          updateFontFamily();
+          document.getElementById('fontFamilyPanel').classList.add('hidden');
+        });
+      });
+      
+      // 简繁转换
+      document.getElementById('chineseConverter').addEventListener('click', function() {
+        readingSettings.chineseConvert = readingSettings.chineseConvert === 'simplified' ? 'traditional' : 'simplified';
+        alert(`已切换到${readingSettings.chineseConvert === 'simplified' ? '简体' : '繁体'}中文`);
+      });
+      
+      // 翻页动画选择
+      document.querySelectorAll('.page-anim-option').forEach(btn => {
+        btn.addEventListener('click', function() {
+          readingSettings.pageAnim = this.dataset.anim;
+          document.querySelectorAll('.page-anim-option').forEach(b => {
+            b.classList.remove('bg-primary/10', 'text-primary');
+          });
+          this.classList.add('bg-primary/10', 'text-primary');
+          alert(`已设置翻页动画为：${this.innerText.trim()}`);
+        });
+      });
+      
+      // 主题选择
+      document.querySelectorAll('.theme-option').forEach(btn => {
+        btn.addEventListener('click', function() {
+          readingSettings.theme = this.dataset.theme;
+          applyTheme();
+          document.querySelectorAll('.theme-option').forEach(b => {
+            b.classList.remove('ring-2', 'ring-primary');
+          });
+          this.classList.add('ring-2', 'ring-primary');
+        });
+      });
+      
+      // 设置按钮
+      document.getElementById('readerSettings').addEventListener('click', function() {
+        alert('阅读器设置功能');
+      });
+    }
+    
+    // 渲染章节列表
+    function renderChapterList() {
+      const listContainer = document.getElementById('chapterSidebarList');
+      listContainer.innerHTML = '';
+      
+      currentNovel.chapters.forEach((chapter, index) => {
+        const chapterItem = document.createElement('div');
+        chapterItem.className = 'chapter-item py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-dark-border cursor-pointer' + 
+          (index === currentChapterIndex ? ' bg-primary/10 text-primary' : '');
+        chapterItem.innerHTML = `<span class="text-gray-800 dark:text-dark-text">${chapter.title}</span>`;
+        chapterItem.addEventListener('click', function() {
+          goToChapter(index);
+          const chapterSidebar = document.getElementById('chapterSidebar');
+          const readerOverlay = document.getElementById('readerOverlay');
+          chapterSidebar.classList.add('translate-x-full');
+          readerOverlay.classList.add('hidden');
+        });
+        listContainer.appendChild(chapterItem);
+      });
+    }
+    
+    // 加载章节
+    function loadChapter(index) {
+      if (index < 0 || index >= currentNovel.chapters.length) return;
+      
+      currentChapterIndex = index;
+      const chapter = currentNovel.chapters[index];
+      
+      document.getElementById('readerTitle').textContent = currentNovel.title;
+      document.getElementById('chapterTitle').textContent = chapter.title;
+      
+      const contentHtml = chapter.content.split('\n\n').map(p => 
+        `<p class="text-gray-800 dark:text-dark-text leading-relaxed mb-4">${p}</p>`
+      ).join('');
+      document.getElementById('chapterContent').innerHTML = contentHtml;
+      
+      document.getElementById('readerChapterSlider').value = index + 1;
+      
+      renderChapterList();
+    }
+    
+    // 上一章
+    function goToPrevChapter() {
+      if (currentChapterIndex > 0) {
+        loadChapter(currentChapterIndex - 1);
+      } else {
+        alert('已经是第一章了');
+      }
+    }
+    
+    // 下一章
+    function goToNextChapter() {
+      if (currentChapterIndex < currentNovel.chapters.length - 1) {
+        loadChapter(currentChapterIndex + 1);
+      } else {
+        alert('已经是最后一章了');
+      }
+    }
+    
+    // 跳转到指定章节
+    function goToChapter(index) {
+      loadChapter(index);
+    }
+    
+    // 更新滑块最大值
+    function updateSliderMax() {
+      document.getElementById('readerChapterSlider').max = currentNovel.chapters.length;
+    }
+    
+    // ==================== 功能函数 ====================
+    
+    // 切换阅读设置面板
+    function toggleReadSettings() {
+      const panel = document.getElementById('readSettingsPanel');
+      panel.classList.toggle('translate-y-full');
+    }
+    
+    // 更新字体大小
+    function updateFontSize() {
+      document.getElementById('fontSizeDisplay').textContent = readingSettings.fontSize;
+      document.getElementById('chapterContent').style.fontSize = `${readingSettings.fontSize}px`;
+      saveSettings();
+    }
+    
+    // 更新字体类型
+    function updateFontFamily() {
+      document.getElementById('chapterContent').style.fontFamily = readingSettings.fontFamily;
+      saveSettings();
+    }
+    
+    // 更新字体粗细
+    function updateFontWeight() {
+      document.getElementById('chapterContent').style.fontWeight = readingSettings.isBold ? 'bold' : 'normal';
+      saveSettings();
+    }
+    
+    // 应用主题
+    function applyTheme() {
+      const readerContent = document.getElementById('readerContent');
+      const themes = {
+        light: { bg: '#ffffff', text: '#333333' },
+        sepia: { bg: '#f4ecd8', text: '#5b4636' },
+        dark: { bg: '#1e1e1e', text: '#e0e0e0' },
+        green: { bg: '#c9e4ca', text: '#2d5a3d' },
+        blue: { bg: '#dde6f0', text: '#2c3e50' }
+      };
+      const theme = themes[readingSettings.theme];
+      readerContent.style.background = theme.bg;
+      readerContent.style.color = theme.text;
+      document.querySelectorAll('#chapterContent p').forEach(p => {
+        p.style.color = theme.text;
+      });
+      saveSettings();
+    }
+    
+    // 保存设置
+    function saveSettings() {
+      localStorage.setItem('readingSettings', JSON.stringify(readingSettings));
+    }
+    
+    // 下载章节
+    function downloadChapter(index) {
+      if (isDownloading) return;
+      
+      isDownloading = true;
+      const chapter = currentNovel.chapters[index];
+      const chapterKey = `${currentNovelId}_${index}`;
+      
+      // 模拟下载
+      setTimeout(() => {
+        downloadedChapters.add(chapterKey);
+        updateDownloadedList();
+        isDownloading = false;
+        alert(`《${chapter.title}》下载完成！`);
+      }, 500);
+    }
+    
+    // 下载全部章节
+    function downloadAllChapters() {
+      if (isDownloading) return;
+      
+      isDownloading = true;
+      let downloaded = 0;
+      let total = currentNovel.chapters.length;
+      
+      const downloadNext = (index) => {
+        if (index >= total) {
+          isDownloading = false;
+          alert(`全部章节下载完成！共${downloaded}章`);
+          updateDownloadedList();
+          return;
+        }
+        
+        const chapterKey = `${currentNovelId}_${index}`;
+        if (!downloadedChapters.has(chapterKey)) {
+          downloadedChapters.add(chapterKey);
+          downloaded++;
+        }
+        
+        // 模拟批量下载
+        setTimeout(() => {
+          downloadNext(index + 1);
+        }, 100);
+      };
+      
+      downloadNext(0);
+    }
+    
+    // 更新已下载列表
+    function updateDownloadedList() {
+      const listEl = document.getElementById('downloadedList');
+      listEl.innerHTML = '';
+      
+      downloadedChapters.forEach(key => {
+        const [novelId, index] = key.split('_');
+        if (novelId === currentNovelId) {
+          const chapter = currentNovel.chapters[parseInt(index)];
+          if (chapter) {
+            const item = document.createElement('div');
+            item.className = 'flex items-center justify-between p-2 bg-gray-50 dark:bg-dark-border rounded';
+            item.innerHTML = `
+              <span class="text-sm truncate">${chapter.title}</span>
+              <i class="fa fa-check text-green-500"></i>
+            `;
+            listEl.appendChild(item);
+          }
+        }
+      });
+      
+      if (listEl.innerHTML === '') {
+        listEl.innerHTML = '<div class="text-center text-gray-500 py-4">暂无下载章节</div>';
+      }
+    }
+    
+    // 切换下载面板
+    function toggleDownloadPanel() {
+      const panel = document.getElementById('downloadPanel');
+      panel.classList.toggle('hidden');
+      updateDownloadedList();
+    }
+    
+    // 加入书架
+    function addToBookshelf() {
+      const novelId = currentNovelId;
+      if (!bookshelf.includes(novelId)) {
+        bookshelf.push(novelId);
+        localStorage.setItem('bookshelf', JSON.stringify(bookshelf));
+        alert(`《${currentNovel.title}》已加入书架！`);
+      } else {
+        alert(`《${currentNovel.title}》已在书架中`);
+      }
+    }
+    
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      // 加载保存的设置
+      const savedSettings = localStorage.getItem('readingSettings');
+      if (savedSettings) {
+        readingSettings = JSON.parse(savedSettings);
+      }
+      
+      initReader();
+      applyTheme();
+      updateFontSize();
+      updateFontFamily();
+    });
+  </script>
+</body>
+</html>

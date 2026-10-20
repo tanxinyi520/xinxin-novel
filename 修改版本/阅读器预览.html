@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>修改版本 - 小说阅读器</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#6366f1',
+            background: '#f5f5f5',
+            bg_divider_line: '#e0e0e0'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { margin: 0; padding: 0; font-family: 'Microsoft YaHei', sans-serif; }
+    .prose p { text-indent: 2em; line-height: 1.8; }
+    .anim-cover { animation: coverSlide 0.3s ease-in-out; }
+    .anim-slide { animation: slideIn 0.3s ease-in-out; }
+    @keyframes coverSlide {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideIn {
+      from { transform: translateX(20px); opacity: 0.8; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body class="bg-white">
+  <!-- 阅读器内容区 -->
+  <div id="readerContent" class="h-screen px-4 md:px-8 lg:px-16 max-w-3xl mx-auto flex flex-col justify-center overflow-y-auto bg-[#f4ecd8]">
+    <h2 id="chapterTitle" class="text-2xl font-bold text-center mb-6 text-[#5b4636]">第 1 章 序章</h2>
+    <div id="chapterContent" class="prose max-w-none" style="color: #5b4636; font-size: 18px; font-family: Microsoft YaHei;">
+      <p>一名孩童，天生无法修炼内功。为了得到父亲的重视关注，他毅然选择了修炼痛苦艰难的外功。</p>
+      <p>春去秋来，时光如梭，这个孩童长大了。他的名字叫秦羽，是镇东王秦德的第三个儿子。</p>
+      <p>秦德是大楚王朝的镇东王，手握重兵，权倾一方。秦羽的两个哥哥秦云和秦霜都是修炼内功的天才，而秦羽却天生无法修炼内功，这让他在家族中备受冷落。</p>
+    </div>
+  </div>
+
+  <!-- 阅读菜单 -->
+  <div id="readerMenu" class="fixed inset-0 bg-black/50 z-20 hidden">
+    <!-- 顶部标题栏 -->
+    <div class="fixed top-0 left-0 right-0 bg-[#f5f5f5] border-b border-[#e0e0e0] z-30 p-4 flex items-center">
+      <button id="readerBack" class="p-2 mr-4">
+        <i class="fa fa-arrow-left text-gray-700"></i>
+      </button>
+      <h3 id="readerTitle" class="text-lg font-medium text-gray-800 flex-1">星辰变</h3>
+      <div class="flex items-center gap-4">
+        <button id="readerDownload" class="p-2">
+          <i class="fa fa-download text-gray-700"></i>
+        </button>
+        <button id="readerSource" class="p-2">
+          <i class="fa fa-refresh text-gray-700"></i>
+        </button>
+        <button id="readerAddToBookshelf" class="p-2">
+          <i class="fa fa-bookmark-o text-gray-700"></i>
+        </button>
+        <button id="readerCloseMenu" class="p-2">
+          <i class="fa fa-times text-gray-700"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- 底部菜单栏 -->
+    <div class="fixed bottom-0 left-0 right-0 bg-[#f5f5f5] border-t border-[#e0e0e0] z-30">
+      <!-- 章节导航 -->
+      <div class="flex items-center justify-between px-6 py-2">
+        <button id="prevChapter" class="px-4 py-2 text-gray-700">
+          <i class="fa fa-chevron-left mr-1"></i> 上一章
+        </button>
+        <div class="flex-1 mx-4">
+          <input type="range" id="readerChapterSlider" min="1" max="5" value="1" class="w-full">
+        </div>
+        <button id="nextChapter" class="px-4 py-2 text-gray-700">
+          下一章 <i class="fa fa-chevron-right ml-1"></i>
+        </button>
+      </div>
+
+      <!-- 功能按钮 -->
+      <div class="flex items-center justify-around py-3 bg-white">
+        <button id="readerChapterList" class="flex flex-col items-center">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center mb-1">
+            <i class="fa fa-list text-xl text-gray-700"></i>
+          </div>
+          <span class="text-xs text-gray-600">目录</span>
+        </button>
+        <button id="readerReadAloud" class="flex flex-col items-center">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center mb-1">
+            <i class="fa fa-volume-up text-xl text-gray-700"></i>
+          </div>
+          <span class="text-xs text-gray-600">朗读</span>
+        </button>
+        <button id="readerFont" class="flex flex-col items-center">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center mb-1">
+            <i class="fa fa-tune text-xl text-gray-700"></i>
+          </div>
+          <span class="text-xs text-gray-600">界面</span>
+        </button>
+        <button id="readerSettings" class="flex flex-col items-center">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center mb-1">
+            <i class="fa fa-cog text-xl text-gray-700"></i>
+          </div>
+          <span class="text-xs text-gray-600">设置</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 阅读设置面板（底部弹出式 - 仿 Android 版本） -->
+  <div id="readSettingsPanel" class="fixed bottom-0 left-0 right-0 bg-white border-t border-[#e0e0e0] z-40 transform transition-transform duration-300 translate-y-full">
+    <!-- 字体大小调节 -->
+    <div class="p-4 border-b border-[#e0e0e0]">
+      <div class="flex items-center justify-center gap-4">
+        <button id="decreaseFont" class="w-12 h-12 rounded-full bg-gray-200 hover:bg-primary/20 flex items-center justify-center">
+          <span class="text-xl font-bold">A-</span>
+        </button>
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-500">小</span>
+          <div class="w-32">
+            <input type="range" id="fontSizeSlider" min="14" max="28" value="18" class="w-full">
+          </div>
+          <span id="fontSizeDisplay" class="text-lg font-medium w-12 text-center">18</span>
+          <div class="w-32">
+            <input type="range" id="fontSizeSlider2" min="14" max="28" value="18" class="w-full">
+          </div>
+          <span class="text-sm text-gray-500">大</span>
+        </div>
+        <button id="increaseFont" class="w-12 h-12 rounded-full bg-gray-200 hover:bg-primary/20 flex items-center justify-center">
+          <span class="text-xl font-bold">A+</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 字体和加粗 -->
+    <div class="p-4 border-b border-[#e0e0e0]">
+      <div class="flex items-center gap-4">
+        <button id="fontBold" class="flex-1 py-2 px-4 border rounded-lg hover:bg-primary/10 font-bold">
+          <i class="fa fa-bold mr-2"></i>加粗
+        </button>
+        <button id="fontFamilyBtn" class="flex-1 py-2 px-4 border rounded-lg hover:bg-primary/10">
+          <i class="fa fa-font mr-2"></i>字体
+        </button>
+        <button id="chineseConverter" class="flex-1 py-2 px-4 border rounded-lg hover:bg-primary/10">
+          <i class="fa fa-language mr-2"></i>简繁
+        </button>
+      </div>
+    </div>
+
+    <!-- 翻页动画 -->
+    <div class="p-4 border-b border-[#e0e0e0]">
+      <h4 class="text-sm text-gray-600 mb-3">翻页动画</h4>
+      <div class="grid grid-cols-5 gap-2">
+        <button class="page-anim-option py-2 px-2 border rounded-lg hover:bg-primary/10 text-xs" data-anim="cover">
+          <i class="fa fa-book block mb-1"></i>覆盖
+        </button>
+        <button class="page-anim-option py-2 px-2 border rounded-lg hover:bg-primary/10 text-xs" data-anim="slide">
+          <i class="fa fa-arrows-h block mb-1"></i>滑动
+        </button>
+        <button class="page-anim-option py-2 px-2 border rounded-lg hover:bg-primary/10 text-xs" data-anim="simulation">
+          <i class="fa fa-sync block mb-1"></i>仿真
+        </button>
+        <button class="page-anim-option py-2 px-2 border rounded-lg hover:bg-primary/10 text-xs" data-anim="scroll">
+          <i class="fa fa-ellipsis-v block mb-1"></i>滚动
+        </button>
+        <button class="page-anim-option py-2 px-2 border rounded-lg hover:bg-primary/10 text-xs" data-anim="none">
+          <i class="fa fa-ban block mb-1"></i>无
+        </button>
+      </div>
+    </div>
+
+    <!-- 阅读主题 -->
+    <div class="p-4">
+      <h4 class="text-sm text-gray-600 mb-3">阅读主题</h4>
+      <div class="grid grid-cols-5 gap-2">
+        <button class="theme-option py-3 border-2 rounded-lg" data-theme="light" style="background:#ffffff;color:#000000;border-color:#ddd">
+          <i class="fa fa-sun-o block mb-1"></i><span class="text-xs">明亮</span>
+        </button>
+        <button class="theme-option py-3 border-2 rounded-lg ring-2 ring-primary" data-theme="sepia" style="background:#f4ecd8;color:#5b4636;border-color:#d4c4a8">
+          <i class="fa fa-book block mb-1"></i><span class="text-xs">羊皮</span>
+        </button>
+        <button class="theme-option py-3 border-2 rounded-lg" data-theme="green" style="background:#c9e4ca;color:#2d5a3d;border-color:#a8d5ba">
+          <i class="fa fa-leaf block mb-1"></i><span class="text-xs">绿色</span>
+        </button>
+        <button class="theme-option py-3 border-2 rounded-lg" data-theme="blue" style="background:#dde6f0;color:#2c3e50;border-color:#b8c5d8">
+          <i class="fa fa-tint block mb-1"></i><span class="text-xs">蓝色</span>
+        </button>
+        <button class="theme-option py-3 border-2 rounded-lg" data-theme="dark" style="background:#1e1e1e;color:#e0e0e0;border-color:#333">
+          <i class="fa fa-moon-o block mb-1"></i><span class="text-xs">夜间</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 字体选择弹窗 -->
+  <div id="fontFamilyPanel" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg p-6 z-50 hidden w-80">
+    <div class="flex justify-between items-center mb-4">
+      <h4 class="text-lg font-medium">选择字体</h4>
+      <button id="closeFontFamily" class="p-2"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <button class="font-family-option p-3 border rounded-lg hover:bg-primary/10" data-font="Microsoft YaHei">
+        <div style="font-family: Microsoft YaHei">微软雅黑</div>
+      </button>
+      <button class="font-family-option p-3 border rounded-lg hover:bg-primary/10" data-font="SimSun">
+        <div style="font-family: SimSun">宋体</div>
+      </button>
+      <button class="font-family-option p-3 border rounded-lg hover:bg-primary/10" data-font="KaiTi">
+        <div style="font-family: KaiTi">楷体</div>
+      </button>
+      <button class="font-family-option p-3 border rounded-lg hover:bg-primary/10" data-font="HeiTi">
+        <div style="font-family: HeiTi">黑体</div>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let readingSettings = { fontSize: 18, fontFamily: 'Microsoft YaHei', theme: 'sepia', isBold: false, pageAnim: 'slide' };
+    
+    // 点击内容显示/隐藏菜单
+    document.getElementById('readerContent').addEventListener('click', function(e) {
+      const menu = document.getElementById('readerMenu');
+      menu.classList.toggle('hidden');
+      document.getElementById('readSettingsPanel').classList.add('translate-y-full');
+    });
+
+    // 关闭菜单
+    document.getElementById('readerCloseMenu').addEventListener('click', function() {
+      document.getElementById('readerMenu').classList.add('hidden');
+    });
+
+    // 打开设置面板
+    document.getElementById('readerFont').addEventListener('click', function() {
+      document.getElementById('readSettingsPanel').classList.toggle('translate-y-full');
+    });
+
+    // 字体大小
+    document.getElementById('fontSizeSlider').addEventListener('input', function() {
+      readingSettings.fontSize = this.value;
+      document.getElementById('fontSizeSlider2').value = this.value;
+      document.getElementById('fontSizeDisplay').textContent = this.value;
+      document.getElementById('chapterContent').style.fontSize = this.value + 'px';
+    });
+    document.getElementById('fontSizeSlider2').addEventListener('input', function() {
+      readingSettings.fontSize = this.value;
+      document.getElementById('fontSizeSlider').value = this.value;
+      document.getElementById('fontSizeDisplay').textContent = this.value;
+      document.getElementById('chapterContent').style.fontSize = this.value + 'px';
+    });
+    document.getElementById('increaseFont').addEventListener('click', function() {
+      if (readingSettings.fontSize < 28) {
+        readingSettings.fontSize += 2;
+        document.getElementById('fontSizeSlider').value = readingSettings.fontSize;
+        document.getElementById('fontSizeSlider2').value = readingSettings.fontSize;
+        document.getElementById('fontSizeDisplay').textContent = readingSettings.fontSize;
+        document.getElementById('chapterContent').style.fontSize = readingSettings.fontSize + 'px';
+      }
+    });
+    document.getElementById('decreaseFont').addEventListener('click', function() {
+      if (readingSettings.fontSize > 14) {
+        readingSettings.fontSize -= 2;
+        document.getElementById('fontSizeSlider').value = readingSettings.fontSize;
+        document.getElementById('fontSizeSlider2').value = readingSettings.fontSize;
+        document.getElementById('fontSizeDisplay').textContent = readingSettings.fontSize;
+        document.getElementById('chapterContent').style.fontSize = readingSettings.fontSize + 'px';
+      }
+    });
+
+    // 加粗
+    document.getElementById('fontBold').addEventListener('click', function() {
+      readingSettings.isBold = !readingSettings.isBold;
+      document.getElementById('chapterContent').style.fontWeight = readingSettings.isBold ? 'bold' : 'normal';
+      this.classList.toggle('bg-primary/10', readingSettings.isBold);
+    });
+
+    // 字体选择
+    document.getElementById('fontFamilyBtn').addEventListener('click', function() {
+      document.getElementById('fontFamilyPanel').classList.remove('hidden');
+    });
+    document.getElementById('closeFontFamily').addEventListener('click', function() {
+      document.getElementById('fontFamilyPanel').classList.add('hidden');
+    });
+    document.querySelectorAll('.font-family-option').forEach(btn => {
+      btn.addEventListener('click', function() {
+        readingSettings.fontFamily = this.dataset.font;
+        document.getElementById('chapterContent').style.fontFamily = this.dataset.font;
+        document.getElementById('fontFamilyPanel').classList.add('hidden');
+      });
+    });
+
+    // 简繁
+    document.getElementById('chineseConverter').addEventListener('click', function() {
+      alert('简繁转换功能');
+    });
+
+    // 翻页动画
+    document.querySelectorAll('.page-anim-option').forEach(btn => {
+      btn.addEventListener('click', function() {
+        readingSettings.pageAnim = this.dataset.anim;
+        document.querySelectorAll('.page-anim-option').forEach(b => b.classList.remove('bg-primary/10', 'text-primary'));
+        this.classList.add('bg-primary/10', 'text-primary');
+      });
+    });
+
+    // 主题切换
+    document.querySelectorAll('.theme-option').forEach(btn => {
+      btn.addEventListener('click', function() {
+        readingSettings.theme = this.dataset.theme;
+        const themes = {
+          light: { bg: '#ffffff', text: '#333333' },
+          sepia: { bg: '#f4ecd8', text: '#5b4636' },
+          green: { bg: '#c9e4ca', text: '#2d5a3d' },
+          blue: { bg: '#dde6f0', text: '#2c3e50' },
+          dark: { bg: '#1e1e1e', text: '#e0e0e0' }
+        };
+        const theme = themes[this.dataset.theme];
+        document.getElementById('readerContent').style.background = theme.bg;
+        document.getElementById('chapterContent').style.color = theme.text;
+        document.getElementById('chapterTitle').style.color = theme.text;
+        document.querySelectorAll('#chapterContent p').forEach(p => p.style.color = theme.text);
+        document.querySelectorAll('.theme-option').forEach(b => b.classList.remove('ring-2', 'ring-primary'));
+        this.classList.add('ring-2', 'ring-primary');
+      });
+    });
+
+    // 上一章下一章
+    document.getElementById('prevChapter').addEventListener('click', function() {
+      alert('上一章');
+    });
+    document.getElementById('nextChapter').addEventListener('click', function() {
+      alert('下一章');
+    });
+
+    // 功能按钮
+    document.getElementById('readerDownload').addEventListener('click', function() { alert('下载功能'); });
+    document.getElementById('readerSource').addEventListener('click', function() { alert('换源功能'); });
+    document.getElementById('readerAddToBookshelf').addEventListener('click', function() { alert('加入书架'); });
+    document.getElementById('readerReadAloud').addEventListener('click', function() { alert('朗读功能'); });
+    document.getElementById('readerSettings').addEventListener('click', function() { alert('设置功能'); });
+    document.getElementById('readerChapterList').addEventListener('click', function() { alert('目录'); });
+  </script>
+</body>
+</html>

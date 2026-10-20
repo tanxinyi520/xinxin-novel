@@ -1,0 +1,12 @@
+<litepal>
+    <dbname value="light_book" />
+    <version value="1" />
+    <list>
+        <mapping class="com.novel.read.data.db.entity.Book" />
+        <mapping class="com.novel.read.data.db.entity.BookChapter" />
+        <mapping class="com.novel.read.data.db.entity.Bookmark" />
+        <mapping class="com.novel.read.data.db.entity.ReadRecord" />
+        <mapping class="com.novel.read.data.db.entity.SearchHistory" />
+    </list>
+    <storage value="external" />
+</litepal>
